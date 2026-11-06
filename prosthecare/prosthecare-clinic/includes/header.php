@@ -26,6 +26,7 @@ if (!isset($_SESSION['user'])) {
 $currentUser = $_SESSION['user'];
 $supabase = new SupabaseClient();
 $currentScript = basename($_SERVER['PHP_SELF']);
+$isClient = in_array(strtolower($currentUser['role'] ?? ''), ['client', 'patient']);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -49,12 +50,12 @@ $currentScript = basename($_SERVER['PHP_SELF']);
                 </div>
                 <div>
                     <h2 class="sidebar-brand-title">ProstheCare</h2>
-                    <span class="sidebar-brand-subtitle">CLINICAL SUITE</span>
+                    <span class="sidebar-brand-subtitle"><?= $isClient ? 'PATIENT PORTAL' : 'CLINICAL SUITE' ?></span>
                 </div>
             </div>
 
             <nav class="sidebar-nav">
-                <span class="nav-section-title">Clinical Operations</span>
+                <span class="nav-section-title"><?= $isClient ? 'My Care Journey' : 'Clinical Operations' ?></span>
                 
                 <a href="dashboard.php" class="nav-link-item <?= $currentScript === 'dashboard.php' ? 'active' : '' ?>">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -63,18 +64,20 @@ $currentScript = basename($_SERVER['PHP_SELF']);
                         <rect x="14" y="14" width="7" height="7"></rect>
                         <rect x="3" y="14" width="7" height="7"></rect>
                     </svg>
-                    <span>Dashboard</span>
+                    <span><?= $isClient ? 'My Care Overview' : 'Dashboard' ?></span>
                 </a>
 
-                <a href="patients.php" class="nav-link-item <?= $currentScript === 'patients.php' ? 'active' : '' ?>">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="9" cy="7" r="4"></circle>
-                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                    </svg>
-                    <span>Patients Directory</span>
-                </a>
+                <?php if (!$isClient): ?>
+                    <a href="patients.php" class="nav-link-item <?= $currentScript === 'patients.php' ? 'active' : '' ?>">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                        <span>Patients Directory</span>
+                    </a>
+                <?php endif; ?>
 
                 <a href="appointments.php" class="nav-link-item <?= $currentScript === 'appointments.php' ? 'active' : '' ?>">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -83,7 +86,7 @@ $currentScript = basename($_SERVER['PHP_SELF']);
                         <line x1="8" y1="2" x2="8" y2="6"></line>
                         <line x1="3" y1="10" x2="21" y2="10"></line>
                     </svg>
-                    <span>Fitting Appointments</span>
+                    <span><?= $isClient ? 'My Appointments' : 'Fitting Appointments' ?></span>
                 </a>
 
                 <a href="care-plans.php" class="nav-link-item <?= $currentScript === 'care-plans.php' ? 'active' : '' ?>">
@@ -94,7 +97,7 @@ $currentScript = basename($_SERVER['PHP_SELF']);
                         <line x1="16" y1="17" x2="8" y2="17"></line>
                         <polyline points="10 9 9 9 8 9"></polyline>
                     </svg>
-                    <span>Prosthetic Devices</span>
+                    <span><?= $isClient ? 'My Device Specs' : 'Prosthetic Devices' ?></span>
                 </a>
 
                 <span class="nav-section-title">Account</span>
@@ -112,11 +115,11 @@ $currentScript = basename($_SERVER['PHP_SELF']);
             <div class="sidebar-footer">
                 <div class="user-profile-badge">
                     <div class="user-avatar">
-                        <?= strtoupper(substr($currentUser['name'] ?? 'P', 0, 1)) ?>
+                        <?= strtoupper(substr($currentUser['name'] ?? 'C', 0, 1)) ?>
                     </div>
                     <div class="user-details">
-                        <span class="user-name-text"><?= htmlspecialchars($currentUser['name'] ?? 'Practitioner') ?></span>
-                        <span class="user-role-text"><?= htmlspecialchars($currentUser['role'] ?? 'Prosthetist') ?></span>
+                        <span class="user-name-text"><?= htmlspecialchars($currentUser['name'] ?? 'Client') ?></span>
+                        <span class="user-role-text"><?= htmlspecialchars($currentUser['role'] ?? 'Client') ?></span>
                     </div>
                 </div>
             </div>
@@ -135,13 +138,23 @@ $currentScript = basename($_SERVER['PHP_SELF']);
                 </div>
 
                 <div class="top-nav-actions">
-                    <a href="patients.php?action=new" class="btn-primary-action">
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="12" y1="5" x2="12" y2="19"></line>
-                            <line x1="5" y1="12" x2="19" y2="12"></line>
-                        </svg>
-                        <span>New Patient Case</span>
-                    </a>
+                    <?php if (!$isClient): ?>
+                        <a href="patients.php?action=new" class="btn-primary-action">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            <span>New Patient Case</span>
+                        </a>
+                    <?php else: ?>
+                        <a href="appointments.php" class="btn-primary-action">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            <span>Book Fitting Session</span>
+                        </a>
+                    <?php endif; ?>
                 </div>
             </header>
 

@@ -1,7 +1,7 @@
 <?php
 /**
- * ProstheCare Clinic Management System - Create Account
- * Live Supabase Auth Registration
+ * ProstheCare Clinic Management System - Client / Patient Registration
+ * Allows prosthetic clients to register their personal patient care account
  */
 
 require_once __DIR__ . '/config/supabase.php';
@@ -17,7 +17,8 @@ $errorMessage = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $fullName = trim($_POST['full_name'] ?? '');
-    $role = trim($_POST['role'] ?? 'Prosthetist');
+    $phone = trim($_POST['phone'] ?? '');
+    $amputationLevel = trim($_POST['amputation_level'] ?? 'Transtibial (Below Knee)');
     $email = trim($_POST['email'] ?? '');
     $password = trim($_POST['password'] ?? '');
     $confirmPassword = trim($_POST['confirm_password'] ?? '');
@@ -29,24 +30,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (strlen($password) < 6) {
         $errorMessage = 'Password must be at least 6 characters.';
     } else {
+        $nameParts = explode(' ', $fullName, 2);
+        $firstName = $nameParts[0];
+        $lastName = $nameParts[1] ?? 'Client';
+
         $metadata = [
             'full_name' => $fullName,
-            'role' => $role
+            'role' => 'Client',
+            'phone' => $phone,
+            'amputation_level' => $amputationLevel
         ];
 
         $result = $supabase->signUp($email, $password, $metadata);
         if ($result['success']) {
-            // Also store profile into public.profiles table
+            $patientCode = 'PT-' . date('Y') . '-' . rand(100, 999);
+
+            // Automatically create record in Supabase patients table
+            $supabase->from('patients')->insert([
+                'patient_code' => $patientCode,
+                'first_name' => $firstName,
+                'last_name' => $lastName,
+                'email' => $email,
+                'phone' => $phone,
+                'amputation_level' => $amputationLevel,
+                'fitting_stage' => 'Assessment',
+                'status' => 'Active',
+                'clinical_notes' => 'Self-registered client via ProstheCare web portal.'
+            ]);
+
+            // Record profile
             $supabase->from('profiles')->insert([
                 'email' => $email,
                 'full_name' => $fullName,
-                'role' => $role
+                'role' => 'Client',
+                'phone' => $phone
             ]);
-            
+
             header('Location: index.php?registered=1');
             exit;
         } else {
-            $errorMessage = $result['error'] ?? 'Registration failed.';
+            $errorMessage = $result['error'] ?? 'Registration failed. Please check your Supabase connection.';
         }
     }
 }
@@ -56,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create an account - ProstheCare Management System</title>
+    <title>Patient Registration - ProstheCare Management System</title>
     <link rel="stylesheet" href="css/variables.css">
     <link rel="stylesheet" href="css/auth.css">
 </head>
@@ -78,14 +101,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </header>
 
             <div class="auth-hero-main">
-                <p class="auth-eyebrow">PRACTITIONER ONBOARDING</p>
-                <h2 class="auth-hero-headline">Empowering<br>prosthetic<br>excellence.</h2>
+                <p class="auth-eyebrow">CLIENT CARE PORTAL</p>
+                <h2 class="auth-hero-headline">Your care<br>journey, personalized<br>& connected.</h2>
                 <p class="auth-hero-description">
-                    Join clinical teams using ProstheCare to coordinate diagnostic fittings, component tracking, and client outcomes with total precision.
+                    Create your client account to track your prosthetic fitting milestones, appointment schedules, and component specifications with your dedicated clinical team.
                 </p>
             </div>
 
-            <!-- Concentric Radar Graphic -->
+            <!-- Concentric Radar Graphic with Glowing Amber Dot -->
             <div class="auth-hero-graphic" aria-hidden="true">
                 <div class="ring-outer"></div>
                 <div class="ring-middle">
@@ -105,16 +128,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
                     <polyline points="9 12 11 14 15 10"></polyline>
                 </svg>
-                <span>HIPAA-aligned data encryption and strict access control</span>
+                <span>HIPAA-aligned data encryption and private clinical records</span>
             </footer>
         </section>
 
-        <!-- RIGHT PANEL: Registration Form -->
+        <!-- RIGHT PANEL: Client Registration Form -->
         <main class="auth-form-panel">
             <div class="auth-card-inner">
-                <span class="form-eyebrow">GET STARTED</span>
-                <h2 class="form-main-heading">Create your account</h2>
-                <p class="form-sub-heading">Set up your practitioner profile to access ProstheCare.</p>
+                <span class="form-eyebrow">PATIENT ONBOARDING</span>
+                <h2 class="form-main-heading">Create your patient account</h2>
+                <p class="form-sub-heading">Register to manage your prosthetic care, fittings, and appointments.</p>
 
                 <?php if (!empty($errorMessage)): ?>
                     <div class="auth-alert-box alert-error" role="alert">
@@ -129,46 +152,58 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 <form class="auth-form" method="POST" action="register.php" novalidate>
                     <div class="form-field-group">
-                        <label for="full_name" class="form-label-text">Full name</label>
+                        <label for="full_name" class="form-label-text">Full name *</label>
                         <input 
                             type="text" 
                             id="full_name" 
                             name="full_name" 
                             class="form-input-control" 
-                            placeholder="Dr. Jordan Hayes, CPO" 
+                            placeholder="e.g. Eleanor Vance" 
                             value="<?= htmlspecialchars($_POST['full_name'] ?? '') ?>"
                             required
                         >
                     </div>
 
                     <div class="form-field-group">
-                        <label for="role" class="form-label-text">Clinical role</label>
+                        <label for="phone" class="form-label-text">Contact phone number</label>
                         <input 
-                            type="text" 
-                            id="role" 
-                            name="role" 
+                            type="tel" 
+                            id="phone" 
+                            name="phone" 
                             class="form-input-control" 
-                            placeholder="e.g. Certified Prosthetist, Orthotist, Clinic Admin" 
-                            value="<?= htmlspecialchars($_POST['role'] ?? 'Prosthetist') ?>"
-                            required
+                            placeholder="+1 (555) 234-5678" 
+                            value="<?= htmlspecialchars($_POST['phone'] ?? '') ?>"
                         >
                     </div>
 
                     <div class="form-field-group">
-                        <label for="email" class="form-label-text">Work email address</label>
+                        <label for="amputation_level" class="form-label-text">Prosthetic care / limb level</label>
+                        <select id="amputation_level" name="amputation_level" class="form-input-control">
+                            <option value="Transtibial (Below Knee)">Transtibial (Below Knee)</option>
+                            <option value="Transfemoral (Above Knee)">Transfemoral (Above Knee)</option>
+                            <option value="Transradial (Below Elbow)">Transradial (Below Elbow)</option>
+                            <option value="Transhumeral (Above Elbow)">Transhumeral (Above Elbow)</option>
+                            <option value="Knee Disarticulation">Knee Disarticulation</option>
+                            <option value="Partial Foot / Symes">Partial Foot / Syme's</option>
+                            <option value="General Prosthetic Consultation">General Prosthetic Consultation</option>
+                        </select>
+                    </div>
+
+                    <div class="form-field-group">
+                        <label for="email" class="form-label-text">Email address *</label>
                         <input 
                             type="email" 
                             id="email" 
                             name="email" 
                             class="form-input-control" 
-                            placeholder="jordan.hayes@clinic.com" 
+                            placeholder="you@example.com" 
                             value="<?= htmlspecialchars($_POST['email'] ?? '') ?>"
                             required
                         >
                     </div>
 
                     <div class="form-field-group">
-                        <label for="password" class="form-label-text">Password</label>
+                        <label for="password" class="form-label-text">Password *</label>
                         <div class="password-input-container">
                             <input 
                                 type="password" 
@@ -193,7 +228,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
 
                     <div class="form-field-group">
-                        <label for="confirm_password" class="form-label-text">Confirm password</label>
+                        <label for="confirm_password" class="form-label-text">Confirm password *</label>
                         <div class="password-input-container">
                             <input 
                                 type="password" 
@@ -207,12 +242,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
 
                     <button type="submit" class="btn-auth-action">
-                        Create account
+                        Create patient account
                     </button>
 
                     <div class="auth-switch-prompt">
-                        <span>Already have an account?</span>
-                        <a href="index.php" class="link-auth-switch">Sign in</a>
+                        <span>Already registered?</span>
+                        <a href="index.php" class="link-auth-switch">Sign in to your account</a>
                     </div>
                 </form>
             </div>

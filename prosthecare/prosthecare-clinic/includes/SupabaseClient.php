@@ -19,57 +19,36 @@ class SupabaseClient {
         $this->serviceKey = SUPABASE_SERVICE_KEY;
     }
 
-    /**
-     * Check if client has valid credentials
-     */
     public function isLive() {
         return isSupabaseConfigured();
     }
 
-    /**
-     * Set target database table
-     */
     public function from($table) {
         $this->currentTable = $table;
         $this->queryParams = [];
         return $this;
     }
 
-    /**
-     * Set selected columns
-     */
     public function select($columns = '*') {
         $this->queryParams['select'] = $columns;
         return $this;
     }
 
-    /**
-     * Filter equality
-     */
     public function eq($column, $value) {
         $this->queryParams[$column] = 'eq.' . $value;
         return $this;
     }
 
-    /**
-     * Order rows
-     */
     public function order($column, $ascending = true) {
         $this->queryParams['order'] = $column . '.' . ($ascending ? 'asc' : 'desc');
         return $this;
     }
 
-    /**
-     * Limit row count
-     */
     public function limit($count) {
         $this->queryParams['limit'] = (int)$count;
         return $this;
     }
 
-    /**
-     * Execute SELECT query against Supabase PostgREST API
-     */
     public function get() {
         if (!$this->isLive()) {
             return [];
@@ -90,9 +69,6 @@ class SupabaseClient {
         return is_array($response['data']) ? $response['data'] : [];
     }
 
-    /**
-     * Execute INSERT into Supabase database table
-     */
     public function insert($data) {
         if (!$this->isLive()) {
             return false;
@@ -111,9 +87,6 @@ class SupabaseClient {
         return ($response['status'] >= 200 && $response['status'] < 300) ? ($response['data'] ?? true) : false;
     }
 
-    /**
-     * Execute UPDATE in Supabase database table
-     */
     public function update($data, $matchColumn, $matchValue) {
         if (!$this->isLive()) {
             return false;
@@ -132,9 +105,6 @@ class SupabaseClient {
         return ($response['status'] >= 200 && $response['status'] < 300);
     }
 
-    /**
-     * Execute DELETE from Supabase database table
-     */
     public function delete($matchColumn, $matchValue) {
         if (!$this->isLive()) {
             return false;
@@ -151,14 +121,11 @@ class SupabaseClient {
         return ($response['status'] >= 200 && $response['status'] < 300);
     }
 
-    /**
-     * Supabase Auth: Sign In with Email & Password
-     */
     public function signIn($email, $password) {
         if (!$this->isLive()) {
             return [
                 'success' => false,
-                'error' => 'Supabase credentials are not configured. Please add SUPABASE_URL and SUPABASE_ANON_KEY to your environment variables.'
+                'error' => 'Supabase is not configured. Please add SUPABASE_URL and SUPABASE_ANON_KEY to your environment.'
             ];
         }
 
@@ -168,11 +135,7 @@ class SupabaseClient {
             'Content-Type: application/json'
         ];
 
-        $payload = json_encode([
-            'email' => $email,
-            'password' => $password
-        ]);
-
+        $payload = json_encode(['email' => $email, 'password' => $password]);
         $response = $this->executeCurl($endpoint, 'POST', $payload, $headers);
 
         if ($response['status'] === 200 && isset($response['data']['access_token'])) {
@@ -181,25 +144,19 @@ class SupabaseClient {
                 'id' => $user['id'] ?? uniqid(),
                 'email' => $user['email'] ?? $email,
                 'name' => $user['user_metadata']['full_name'] ?? explode('@', $email)[0],
-                'role' => $user['user_metadata']['role'] ?? 'Prosthetist',
+                'role' => $user['user_metadata']['role'] ?? 'Client',
                 'token' => $response['data']['access_token']
             ];
             return ['success' => true, 'user' => $_SESSION['user']];
         }
 
-        $errorMsg = $response['data']['error_description'] ?? $response['data']['msg'] ?? 'Invalid credentials or user not found.';
+        $errorMsg = $response['data']['error_description'] ?? $response['data']['msg'] ?? 'Invalid email or password.';
         return ['success' => false, 'error' => $errorMsg];
     }
 
-    /**
-     * Supabase Auth: Register new practitioner account
-     */
     public function signUp($email, $password, $metadata = []) {
         if (!$this->isLive()) {
-            return [
-                'success' => false,
-                'error' => 'Supabase is not configured. Please add SUPABASE_URL and SUPABASE_ANON_KEY.'
-            ];
+            return ['success' => false, 'error' => 'Supabase is not configured.'];
         }
 
         $endpoint = $this->url . '/auth/v1/signup';
@@ -229,15 +186,9 @@ class SupabaseClient {
         return ['success' => false, 'error' => $errorMsg];
     }
 
-    /**
-     * Supabase Auth: Request Password Reset Link
-     */
     public function resetPassword($email) {
         if (!$this->isLive()) {
-            return [
-                'success' => false,
-                'error' => 'Supabase is not configured.'
-            ];
+            return ['success' => false, 'error' => 'Supabase is not configured.'];
         }
 
         $endpoint = $this->url . '/auth/v1/recover';
@@ -250,23 +201,16 @@ class SupabaseClient {
         $response = $this->executeCurl($endpoint, 'POST', $payload, $headers);
 
         if ($response['status'] === 200) {
-            return ['success' => true, 'message' => 'Password reset instructions have been dispatched to your email.'];
+            return ['success' => true, 'message' => 'Password reset instructions sent.'];
         }
 
-        $errorMsg = $response['data']['msg'] ?? $response['data']['error_description'] ?? 'Unable to send reset email.';
-        return ['success' => false, 'error' => $errorMsg];
+        return ['success' => false, 'error' => $response['data']['msg'] ?? 'Unable to send reset email.'];
     }
 
-    /**
-     * Helper to get user access token
-     */
     private function getAccessToken() {
         return $_SESSION['user']['token'] ?? null;
     }
 
-    /**
-     * cURL Handler for Supabase REST and Auth endpoints
-     */
     private function executeCurl($url, $method = 'GET', $body = null, $headers = []) {
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -285,17 +229,10 @@ class SupabaseClient {
         curl_close($ch);
 
         if ($curlError) {
-            return [
-                'status' => 500,
-                'error' => $curlError,
-                'data' => null
-            ];
+            return ['status' => 500, 'error' => $curlError, 'data' => null];
         }
 
         $decoded = json_decode($rawResponse, true);
-        return [
-            'status' => $statusCode,
-            'data' => $decoded !== null ? $decoded : $rawResponse
-        ];
+        return ['status' => $statusCode, 'data' => $decoded !== null ? $decoded : $rawResponse];
     }
 }
