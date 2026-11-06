@@ -1,12 +1,7 @@
 <?php
-/**
- * ProstheCare Clinic Management System - Dashboard
- */
-
 $pageTitle = 'Clinical Dashboard';
 require_once __DIR__ . '/includes/header.php';
 
-// Fetch Patients
 $patients = $supabase->from('patients')->select('*')->order('created_at', false)->get();
 $appointments = $supabase->from('appointments')->select('*')->order('appointment_date', true)->get();
 $carePlans = $supabase->from('care_plans')->select('*')->get();
@@ -23,7 +18,6 @@ $completedCases = count(array_filter($patients, function($p) {
 }));
 ?>
 
-<!-- KPI Metrics Grid -->
 <section class="stats-grid-row" aria-label="Clinic Statistics">
     <div class="stat-card-widget">
         <div class="stat-metric-info">
@@ -77,7 +71,6 @@ $completedCases = count(array_filter($patients, function($p) {
     </div>
 </section>
 
-<!-- Today's Clinical Schedule -->
 <section class="content-card-panel">
     <div class="panel-header-row">
         <h2 class="panel-title-text">Upcoming Fitting & Alignment Sessions</h2>
@@ -96,9 +89,7 @@ $completedCases = count(array_filter($patients, function($p) {
             </thead>
             <tbody>
                 <?php if (empty($appointments)): ?>
-                    <tr>
-                        <td colspan="5">No scheduled appointments recorded yet.</td>
-                    </tr>
+                    <tr><td colspan="5">No scheduled appointments recorded yet.</td></tr>
                 <?php else: ?>
                     <?php foreach (array_slice($appointments, 0, 4) as $apt): ?>
                         <tr>
@@ -106,7 +97,7 @@ $completedCases = count(array_filter($patients, function($p) {
                                 <strong><?= htmlspecialchars($apt['appointment_time'] ?? '') ?></strong>
                                 <br><small><?= htmlspecialchars($apt['appointment_date'] ?? '') ?></small>
                             </td>
-                            <td><?= htmlspecialchars($apt['patient_name'] ?? $apt['patient_id'] ?? 'Client') ?></td>
+                            <td><?= htmlspecialchars($apt['patient_name'] ?? 'Client') ?></td>
                             <td><?= htmlspecialchars($apt['appointment_type'] ?? '') ?></td>
                             <td><?= htmlspecialchars($apt['room'] ?? 'Fitting Suite') ?></td>
                             <td>
@@ -122,7 +113,6 @@ $completedCases = count(array_filter($patients, function($p) {
     </div>
 </section>
 
-<!-- Recent Prosthetic Cases -->
 <section class="content-card-panel">
     <div class="panel-header-row">
         <h2 class="panel-title-text">Recent Prosthetic Client Cases</h2>
@@ -142,9 +132,7 @@ $completedCases = count(array_filter($patients, function($p) {
             </thead>
             <tbody>
                 <?php if (empty($patients)): ?>
-                    <tr>
-                        <td colspan="6">No patient cases available. Click 'New Patient Case' above to add one.</td>
-                    </tr>
+                    <tr><td colspan="6">No patient cases available. Click 'New Patient Case' to add one.</td></tr>
                 <?php else: ?>
                     <?php foreach (array_slice($patients, 0, 5) as $pt): ?>
                         <tr>
@@ -158,14 +146,8 @@ $completedCases = count(array_filter($patients, function($p) {
                                 </span>
                             </td>
                             <td>
-                                <?php
-                                    $st = $pt['status'] ?? 'Active';
-                                    $badgeClass = 'status-active';
-                                    if ($st === 'In Fabrication') $badgeClass = 'status-fabrication';
-                                    if ($st === 'Completed') $badgeClass = 'status-completed';
-                                ?>
-                                <span class="status-pill <?= $badgeClass ?>">
-                                    <?= htmlspecialchars($st) ?>
+                                <span class="status-pill <?= ($pt['status'] ?? '') === 'In Fabrication' ? 'status-fabrication' : 'status-active' ?>">
+                                    <?= htmlspecialchars($pt['status'] ?? 'Active') ?>
                                 </span>
                             </td>
                         </tr>

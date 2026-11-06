@@ -1,10 +1,4 @@
-/**
- * ProstheCare Clinic Management System - Dashboard JavaScript
- * Handles modals, dynamic filters, and UI controls
- */
-
 document.addEventListener('DOMContentLoaded', function () {
-    // Modal Openers
     const openModalButtons = document.querySelectorAll('[data-modal-target]');
     openModalButtons.forEach(button => {
         button.addEventListener('click', function () {
@@ -16,7 +10,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Modal Closers
     const closeModalButtons = document.querySelectorAll('[data-modal-close]');
     closeModalButtons.forEach(button => {
         button.addEventListener('click', function () {
@@ -27,14 +20,12 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Close modal on background click
     window.addEventListener('click', function (e) {
         if (e.target.classList.contains('modal-overlay')) {
             e.target.classList.remove('active');
         }
     });
 
-    // Live table search filtering
     const searchInputs = document.querySelectorAll('[data-table-search]');
     searchInputs.forEach(input => {
         input.addEventListener('keyup', function () {

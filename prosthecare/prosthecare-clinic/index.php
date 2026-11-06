@@ -7,7 +7,6 @@
 require_once __DIR__ . '/config/supabase.php';
 require_once __DIR__ . '/includes/SupabaseClient.php';
 
-// If already logged in, redirect to dashboard
 if (isset($_SESSION['user'])) {
     header('Location: dashboard.php');
     exit;
@@ -34,7 +33,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $result = $supabase->signIn($email, $password);
         if ($result['success']) {
-            // Set cookie for Vercel serverless session support
             setcookie('prosthecare_user', json_encode([
                 'id' => $_SESSION['user']['id'],
                 'name' => $_SESSION['user']['name'],

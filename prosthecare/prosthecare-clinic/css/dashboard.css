@@ -1,20 +1,11 @@
-/* ==============================================================================
-   ProstheCare Clinic Management System - Workspace Dashboard CSS
-   Strictly External CSS (No inline styles)
-   ============================================================================== */
-
 @import url('variables.css');
 
-/* Main Application Shell */
 .app-layout {
     display: flex;
     min-height: 100vh;
     background-color: var(--color-bg);
 }
 
-/* ==============================================================================
-   SIDEBAR NAVIGATION
-   ============================================================================== */
 .app-sidebar {
     width: 260px;
     background-color: var(--color-surface);
@@ -169,9 +160,6 @@
     color: var(--color-text-muted);
 }
 
-/* ==============================================================================
-   MAIN CONTENT AREA
-   ============================================================================== */
 .app-main {
     flex-grow: 1;
     display: flex;
@@ -180,7 +168,6 @@
     overflow-y: auto;
 }
 
-/* Top Navigation Bar */
 .top-navbar {
     height: 70px;
     background-color: var(--color-surface);
@@ -281,7 +268,6 @@
     background-color: var(--color-primary-dark);
 }
 
-/* Page Body Container */
 .page-content-wrapper {
     padding: 32px;
     display: flex;
@@ -289,7 +275,6 @@
     gap: 28px;
 }
 
-/* Notification banner for unconfigured Supabase */
 .config-banner {
     background: linear-gradient(90deg, #ecfeff 0%, #f0fdfa 100%);
     border: 1px solid #a5f3fc;
@@ -311,7 +296,6 @@
     margin-bottom: 2px;
 }
 
-/* Stats Metrics Grid */
 .stats-grid-row {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -382,7 +366,6 @@
     height: 24px;
 }
 
-/* Data Tables */
 .content-card-panel {
     background-color: var(--color-surface);
     border: 1px solid var(--color-border);
@@ -435,15 +418,10 @@
     vertical-align: middle;
 }
 
-.clinic-table tr:last-child td {
-    border-bottom: none;
-}
-
 .clinic-table tr:hover td {
     background-color: rgba(248, 250, 252, 0.8);
 }
 
-/* Badges */
 .status-pill {
     display: inline-flex;
     align-items: center;
@@ -468,12 +446,6 @@
     color: var(--color-primary-dark);
 }
 
-.status-completed {
-    background-color: #f1f5f9;
-    color: #475569;
-}
-
-/* Modal Popup Dialog */
 .modal-overlay {
     display: none;
     position: fixed;
@@ -519,9 +491,6 @@
     border: none;
     cursor: pointer;
     color: var(--color-text-muted);
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 .modal-body {
@@ -542,7 +511,6 @@
     gap: 12px;
 }
 
-/* Responsive */
 .table-row-hidden {
     display: none !important;
 }
@@ -551,15 +519,12 @@
     .app-sidebar {
         display: none;
     }
-
     .top-navbar {
         padding: 0 16px;
     }
-
     .page-content-wrapper {
         padding: 20px 16px;
     }
-
     .form-grid-2col {
         grid-template-columns: 1fr;
     }

@@ -1,11 +1,5 @@
-/* ==============================================================================
-   ProstheCare Clinic Management System - Auth Layout & Styling
-   Strictly External CSS (No inline styles)
-   ============================================================================== */
-
 @import url('variables.css');
 
-/* Main split layout wrapper */
 .auth-container {
     display: flex;
     min-height: 100vh;
@@ -14,9 +8,7 @@
     overflow-x: hidden;
 }
 
-/* ==============================================================================
-   LEFT PANEL: Deep Teal Hero Showcase
-   ============================================================================== */
+/* LEFT HERO PANEL */
 .auth-hero {
     position: relative;
     width: 50%;
@@ -30,7 +22,6 @@
     color: var(--color-text-white);
 }
 
-/* Brand header */
 .auth-brand {
     display: flex;
     align-items: center;
@@ -78,7 +69,6 @@
     margin-top: 3px;
 }
 
-/* Hero Center Content */
 .auth-hero-main {
     max-width: 540px;
     margin-top: auto;
@@ -114,7 +104,7 @@
     max-width: 480px;
 }
 
-/* Decorative Concentric Radar Rings & Orbital Geometry */
+/* Concentric Radar Rings & Orbital Dot */
 .auth-hero-graphic {
     position: absolute;
     bottom: -110px;
@@ -183,7 +173,6 @@
     100% { transform: scale(1.15); opacity: 1; }
 }
 
-/* Hero Footer note */
 .auth-hero-footer {
     display: flex;
     align-items: center;
@@ -201,9 +190,7 @@
     flex-shrink: 0;
 }
 
-/* ==============================================================================
-   RIGHT PANEL: White Authentication Form Panel
-   ============================================================================== */
+/* RIGHT PANEL: Form Controls */
 .auth-form-panel {
     width: 50%;
     min-height: 100vh;
@@ -219,7 +206,6 @@
     max-width: 440px;
 }
 
-/* Form Eyebrow */
 .form-eyebrow {
     font-size: 11px;
     font-weight: 700;
@@ -230,7 +216,6 @@
     display: inline-block;
 }
 
-/* Form Titles */
 .form-main-heading {
     font-size: 32px;
     font-weight: 700;
@@ -247,7 +232,6 @@
     margin-bottom: 32px;
 }
 
-/* Form Fields */
 .form-field-group {
     margin-bottom: 22px;
 }
@@ -287,7 +271,6 @@
     box-shadow: var(--shadow-input-focus);
 }
 
-/* Password Input With Eye Toggle */
 .password-input-container {
     position: relative;
     width: 100%;
@@ -322,7 +305,6 @@
     height: 20px;
 }
 
-/* Form Aux Row (Forgot Password) */
 .form-aux-row {
     display: flex;
     justify-content: flex-end;
@@ -343,7 +325,6 @@
     text-decoration: underline;
 }
 
-/* Submit Button */
 .btn-auth-action {
     width: 100%;
     height: 48px;
@@ -373,7 +354,6 @@
     transform: translateY(1px);
 }
 
-/* Bottom Registration / Switch Prompt */
 .auth-switch-prompt {
     text-align: center;
     margin-top: 26px;
@@ -392,7 +372,6 @@
     text-decoration: underline;
 }
 
-/* Alerts & Status Boxes */
 .auth-alert-box {
     padding: 12px 16px;
     border-radius: var(--radius-sm);
@@ -452,7 +431,6 @@
     border-radius: 4px;
 }
 
-/* Mobile & Responsive Adjustments */
 @media (max-width: 992px) {
     .auth-container {
         flex-direction: column;
