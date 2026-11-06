@@ -28,11 +28,9 @@ function loadEnv($path = __DIR__ . '/../.env') {
             $key = trim($key);
             $value = trim(trim($value), "\"'");
             
-            if (!array_key_exists($key, $_SERVER) && !array_key_exists($key, $_ENV)) {
-                putenv("$key=$value");
-                $_ENV[$key] = $value;
-                $_SERVER[$key] = $value;
-            }
+            putenv("$key=$value");
+            $_ENV[$key] = $value;
+            $_SERVER[$key] = $value;
         }
     }
 }
@@ -40,19 +38,43 @@ function loadEnv($path = __DIR__ . '/../.env') {
 // Load .env if present
 loadEnv();
 
-// Fetch credentials from environment (supports local .env and Vercel Environment Variables)
-$supabaseUrl = getenv('SUPABASE_URL') ?: (isset($_SERVER['SUPABASE_URL']) ? $_SERVER['SUPABASE_URL'] : '');
-$supabaseAnonKey = getenv('SUPABASE_ANON_KEY') ?: (isset($_SERVER['SUPABASE_ANON_KEY']) ? $_SERVER['SUPABASE_ANON_KEY'] : '');
-$supabaseServiceKey = getenv('SUPABASE_SERVICE_KEY') ?: (isset($_SERVER['SUPABASE_SERVICE_KEY']) ? $_SERVER['SUPABASE_SERVICE_KEY'] : '');
-$clinicName = getenv('CLINIC_NAME') ?: 'ProstheCare Management System';
+// Fetch credentials from environment (supports standard, Next.js, and modern Supabase publishable keys)
+$defaultUrl = 'https://gdpzdypxospokczofxlu.supabase.co';
 
-define('SUPABASE_URL', rtrim($supabaseUrl, '/'));
-define('SUPABASE_ANON_KEY', $supabaseAnonKey);
-define('SUPABASE_SERVICE_KEY', $supabaseServiceKey);
-define('CLINIC_NAME', $clinicName);
+$supabaseUrl = getenv('SUPABASE_URL') 
+    ?: getenv('NEXT_PUBLIC_SUPABASE_URL') 
+    ?: (isset($_SERVER['SUPABASE_URL']) && !empty($_SERVER['SUPABASE_URL']) ? $_SERVER['SUPABASE_URL'] : '')
+    ?: (isset($_SERVER['NEXT_PUBLIC_SUPABASE_URL']) && !empty($_SERVER['NEXT_PUBLIC_SUPABASE_URL']) ? $_SERVER['NEXT_PUBLIC_SUPABASE_URL'] : $defaultUrl);
+
+$supabaseAnonKey = getenv('SUPABASE_ANON_KEY') 
+    ?: getenv('NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY') 
+    ?: getenv('SUPABASE_PUBLISHABLE_KEY') 
+    ?: (isset($_SERVER['SUPABASE_ANON_KEY']) && !empty($_SERVER['SUPABASE_ANON_KEY']) ? $_SERVER['SUPABASE_ANON_KEY'] : '')
+    ?: (isset($_SERVER['NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY']) && !empty($_SERVER['NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY']) ? $_SERVER['NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY'] : '')
+    ?: (isset($_SERVER['SUPABASE_PUBLISHABLE_KEY']) && !empty($_SERVER['SUPABASE_PUBLISHABLE_KEY']) ? $_SERVER['SUPABASE_PUBLISHABLE_KEY'] : '');
+
+$supabaseServiceKey = getenv('SUPABASE_SERVICE_KEY') 
+    ?: getenv('SUPABASE_SECRET_KEY')
+    ?: (isset($_SERVER['SUPABASE_SERVICE_KEY']) && !empty($_SERVER['SUPABASE_SERVICE_KEY']) ? $_SERVER['SUPABASE_SERVICE_KEY'] : '')
+    ?: (isset($_SERVER['SUPABASE_SECRET_KEY']) && !empty($_SERVER['SUPABASE_SECRET_KEY']) ? $_SERVER['SUPABASE_SECRET_KEY'] : '');
+
+$clinicName = getenv('CLINIC_NAME') ?: (isset($_SERVER['CLINIC_NAME']) ? $_SERVER['CLINIC_NAME'] : 'ProstheCare Orthotics & Prosthetics Center');
+
+if (!defined('SUPABASE_URL')) {
+    define('SUPABASE_URL', rtrim($supabaseUrl, '/'));
+}
+if (!defined('SUPABASE_ANON_KEY')) {
+    define('SUPABASE_ANON_KEY', $supabaseAnonKey);
+}
+if (!defined('SUPABASE_SERVICE_KEY')) {
+    define('SUPABASE_SERVICE_KEY', $supabaseServiceKey);
+}
+if (!defined('CLINIC_NAME')) {
+    define('CLINIC_NAME', $clinicName);
+}
 
 /**
- * Validates whether Supabase credentials are configured
+ * Validates whether Supabase credentials are fully configured
  */
 function isSupabaseConfigured() {
     return !empty(SUPABASE_URL) && !empty(SUPABASE_ANON_KEY);

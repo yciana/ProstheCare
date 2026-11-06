@@ -1,7 +1,7 @@
 <?php
 /**
  * ProstheCare Clinic Management System
- * Production Supabase REST & Auth Client (Zero Demo/Mock code)
+ * Production Supabase REST & Auth Client
  */
 
 require_once __DIR__ . '/../config/supabase.php';
@@ -12,15 +12,20 @@ class SupabaseClient {
     private $serviceKey;
     private $currentTable;
     private $queryParams = [];
+    private $lastError = null;
 
     public function __construct() {
-        $this->url = SUPABASE_URL;
-        $this->anonKey = SUPABASE_ANON_KEY;
-        $this->serviceKey = SUPABASE_SERVICE_KEY;
+        $this->url = defined('SUPABASE_URL') ? SUPABASE_URL : '';
+        $this->anonKey = defined('SUPABASE_ANON_KEY') ? SUPABASE_ANON_KEY : '';
+        $this->serviceKey = defined('SUPABASE_SERVICE_KEY') ? SUPABASE_SERVICE_KEY : '';
     }
 
     public function isLive() {
         return isSupabaseConfigured();
+    }
+
+    public function getLastError() {
+        return $this->lastError;
     }
 
     public function from($table) {
@@ -51,6 +56,7 @@ class SupabaseClient {
 
     public function get() {
         if (!$this->isLive()) {
+            $this->lastError = 'Supabase is not configured.';
             return [];
         }
 
@@ -61,71 +67,97 @@ class SupabaseClient {
 
         $headers = [
             'apikey: ' . $this->anonKey,
-            'Authorization: Bearer ' . ($this->getAccessToken() ?: $this->anonKey),
+            'Authorization: Bearer ' . ($this->getAccessToken() ?: ($this->serviceKey ?: $this->anonKey)),
             'Content-Type: application/json'
         ];
 
         $response = $this->executeCurl($endpoint, 'GET', null, $headers);
-        return is_array($response['data']) ? $response['data'] : [];
+        if ($response['status'] >= 200 && $response['status'] < 300) {
+            return is_array($response['data']) ? $response['data'] : [];
+        }
+
+        $this->lastError = $this->extractErrorMessage($response, 'Failed to fetch data from ' . $this->currentTable);
+        return [];
     }
 
     public function insert($data) {
         if (!$this->isLive()) {
+            $this->lastError = 'Supabase is not configured.';
             return false;
         }
 
         $endpoint = $this->url . '/rest/v1/' . $this->currentTable;
         $headers = [
             'apikey: ' . $this->anonKey,
-            'Authorization: Bearer ' . ($this->getAccessToken() ?: $this->anonKey),
+            'Authorization: Bearer ' . ($this->getAccessToken() ?: ($this->serviceKey ?: $this->anonKey)),
             'Content-Type: application/json',
             'Prefer: return=representation'
         ];
 
         $payload = json_encode($data);
         $response = $this->executeCurl($endpoint, 'POST', $payload, $headers);
-        return ($response['status'] >= 200 && $response['status'] < 300) ? ($response['data'] ?? true) : false;
+
+        if ($response['status'] >= 200 && $response['status'] < 300) {
+            return $response['data'] ?? true;
+        }
+
+        $this->lastError = $this->extractErrorMessage($response, 'Failed to insert record into ' . $this->currentTable);
+        return false;
     }
 
     public function update($data, $matchColumn, $matchValue) {
         if (!$this->isLive()) {
+            $this->lastError = 'Supabase is not configured.';
             return false;
         }
 
         $endpoint = $this->url . '/rest/v1/' . $this->currentTable . '?' . $matchColumn . '=eq.' . urlencode($matchValue);
         $headers = [
             'apikey: ' . $this->anonKey,
-            'Authorization: Bearer ' . ($this->getAccessToken() ?: $this->anonKey),
+            'Authorization: Bearer ' . ($this->getAccessToken() ?: ($this->serviceKey ?: $this->anonKey)),
             'Content-Type: application/json',
             'Prefer: return=representation'
         ];
 
         $payload = json_encode($data);
         $response = $this->executeCurl($endpoint, 'PATCH', $payload, $headers);
-        return ($response['status'] >= 200 && $response['status'] < 300);
+
+        if ($response['status'] >= 200 && $response['status'] < 300) {
+            return true;
+        }
+
+        $this->lastError = $this->extractErrorMessage($response, 'Failed to update record in ' . $this->currentTable);
+        return false;
     }
 
     public function delete($matchColumn, $matchValue) {
         if (!$this->isLive()) {
+            $this->lastError = 'Supabase is not configured.';
             return false;
         }
 
         $endpoint = $this->url . '/rest/v1/' . $this->currentTable . '?' . $matchColumn . '=eq.' . urlencode($matchValue);
         $headers = [
             'apikey: ' . $this->anonKey,
-            'Authorization: Bearer ' . ($this->getAccessToken() ?: $this->anonKey),
+            'Authorization: Bearer ' . ($this->getAccessToken() ?: ($this->serviceKey ?: $this->anonKey)),
             'Content-Type: application/json'
         ];
 
         $response = $this->executeCurl($endpoint, 'DELETE', null, $headers);
-        return ($response['status'] >= 200 && $response['status'] < 300);
+
+        if ($response['status'] >= 200 && $response['status'] < 300) {
+            return true;
+        }
+
+        $this->lastError = $this->extractErrorMessage($response, 'Failed to delete record from ' . $this->currentTable);
+        return false;
     }
 
     public function signIn($email, $password) {
         if (!$this->isLive()) {
             return [
                 'success' => false,
-                'error' => 'Supabase is not configured. Please add SUPABASE_URL and SUPABASE_ANON_KEY to your environment.'
+                'error' => 'Supabase is not configured. Please add SUPABASE_ANON_KEY to your .env file.'
             ];
         }
 
@@ -150,13 +182,21 @@ class SupabaseClient {
             return ['success' => true, 'user' => $_SESSION['user']];
         }
 
-        $errorMsg = $response['data']['error_description'] ?? $response['data']['msg'] ?? 'Invalid email or password.';
+        $errorMsg = $this->extractErrorMessage($response, 'Invalid email or password.');
+        if (stripos($errorMsg, 'Email not confirmed') !== false) {
+            $errorMsg = 'Email not confirmed yet. Please verify your email via the confirmation link sent to your inbox, or disable "Confirm email" in your Supabase Auth settings.';
+        }
+
+        $this->lastError = $errorMsg;
         return ['success' => false, 'error' => $errorMsg];
     }
 
     public function signUp($email, $password, $metadata = []) {
         if (!$this->isLive()) {
-            return ['success' => false, 'error' => 'Supabase is not configured.'];
+            return [
+                'success' => false,
+                'error' => 'Supabase is not configured. Please add your SUPABASE_ANON_KEY to .env'
+            ];
         }
 
         $endpoint = $this->url . '/auth/v1/signup';
@@ -174,15 +214,34 @@ class SupabaseClient {
         $response = $this->executeCurl($endpoint, 'POST', $payload, $headers);
 
         if ($response['status'] === 200 || $response['status'] === 201) {
-            $userData = $response['data']['user'] ?? $response['data'];
+            $data = is_array($response['data']) ? $response['data'] : [];
+            $userData = $data['user'] ?? $data;
+            $accessToken = $data['access_token'] ?? null;
+
+            // If an active session token is immediately returned, save it
+            if ($accessToken) {
+                $_SESSION['user'] = [
+                    'id' => $userData['id'] ?? uniqid(),
+                    'email' => $userData['email'] ?? $email,
+                    'name' => $userData['user_metadata']['full_name'] ?? ($metadata['full_name'] ?? explode('@', $email)[0]),
+                    'role' => $userData['user_metadata']['role'] ?? ($metadata['role'] ?? 'Client'),
+                    'token' => $accessToken
+                ];
+            }
+
+            $requiresConfirmation = empty($accessToken) && empty($userData['email_confirmed_at']) && !empty($userData['confirmation_sent_at']);
+
             return [
                 'success' => true,
                 'message' => 'Account successfully registered in Supabase!',
-                'user' => $userData
+                'user' => $userData,
+                'access_token' => $accessToken,
+                'requires_confirmation' => $requiresConfirmation
             ];
         }
 
-        $errorMsg = $response['data']['msg'] ?? $response['data']['error_description'] ?? 'Registration failed.';
+        $errorMsg = $this->extractErrorMessage($response, 'Registration failed.');
+        $this->lastError = $errorMsg;
         return ['success' => false, 'error' => $errorMsg];
     }
 
@@ -204,11 +263,33 @@ class SupabaseClient {
             return ['success' => true, 'message' => 'Password reset instructions sent.'];
         }
 
-        return ['success' => false, 'error' => $response['data']['msg'] ?? 'Unable to send reset email.'];
+        $errorMsg = $this->extractErrorMessage($response, 'Unable to send reset email.');
+        $this->lastError = $errorMsg;
+        return ['success' => false, 'error' => $errorMsg];
     }
 
     private function getAccessToken() {
         return $_SESSION['user']['token'] ?? null;
+    }
+
+    private function extractErrorMessage($response, $default = 'An unknown error occurred.') {
+        if (is_array($response['data'])) {
+            return $response['data']['msg']
+                ?? $response['data']['message']
+                ?? $response['data']['error_description']
+                ?? (is_string($response['data']['error'] ?? null) ? $response['data']['error'] : null)
+                ?? $default;
+        }
+
+        if (!empty($response['error'])) {
+            return $response['error'];
+        }
+
+        if (is_string($response['data']) && !empty($response['data'])) {
+            return $response['data'];
+        }
+
+        return $default;
     }
 
     private function executeCurl($url, $method = 'GET', $body = null, $headers = []) {
@@ -229,7 +310,7 @@ class SupabaseClient {
         curl_close($ch);
 
         if ($curlError) {
-            return ['status' => 500, 'error' => $curlError, 'data' => null];
+            return ['status' => 500, 'error' => 'cURL error: ' . $curlError, 'data' => null];
         }
 
         $decoded = json_decode($rawResponse, true);

@@ -14,6 +14,7 @@ if (isset($_SESSION['user'])) {
 
 $supabase = new SupabaseClient();
 $errorMessage = '';
+$warningNotice = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $fullName = trim($_POST['full_name'] ?? '');
@@ -25,14 +26,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (empty($fullName) || empty($email) || empty($password)) {
         $errorMessage = 'Please complete all required fields.';
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $errorMessage = 'Please enter a valid email address.';
     } elseif ($password !== $confirmPassword) {
         $errorMessage = 'Passwords do not match.';
     } elseif (strlen($password) < 6) {
         $errorMessage = 'Password must be at least 6 characters.';
+    } elseif (!$supabase->isLive()) {
+        $errorMessage = 'Supabase credentials are not fully configured. Please set your SUPABASE_ANON_KEY in the .env file.';
     } else {
         $nameParts = explode(' ', $fullName, 2);
         $firstName = $nameParts[0];
-        $lastName = $nameParts[1] ?? 'Client';
+        $lastName = !empty($nameParts[1]) ? $nameParts[1] : 'Client';
 
         $metadata = [
             'full_name' => $fullName,
@@ -43,10 +48,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $result = $supabase->signUp($email, $password, $metadata);
         if ($result['success']) {
-            $patientCode = 'PT-' . date('Y') . '-' . rand(100, 999);
+            $userId = $result['user']['id'] ?? null;
+            $patientCode = 'PT-' . date('Y') . '-' . rand(1000, 9999);
 
             // Automatically create record in Supabase patients table
-            $supabase->from('patients')->insert([
+            $patientData = [
                 'patient_code' => $patientCode,
                 'first_name' => $firstName,
                 'last_name' => $lastName,
@@ -56,15 +62,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'fitting_stage' => 'Assessment',
                 'status' => 'Active',
                 'clinical_notes' => 'Self-registered client via ProstheCare web portal.'
-            ]);
+            ];
+            $patientResult = $supabase->from('patients')->insert($patientData);
 
-            // Record profile
-            $supabase->from('profiles')->insert([
+            // Record profile linked to user_id
+            $profileData = [
                 'email' => $email,
                 'full_name' => $fullName,
                 'role' => 'Client',
                 'phone' => $phone
-            ]);
+            ];
+            if ($userId) {
+                $profileData['user_id'] = $userId;
+            }
+            $profileResult = $supabase->from('profiles')->insert($profileData);
+
+            if (!$patientResult || !$profileResult) {
+                error_log("ProstheCare Table Insert Notice: " . ($supabase->getLastError() ?: 'Unknown issue'));
+            }
+
+            // Check if email confirmation is required by Supabase Auth
+            if (!empty($result['requires_confirmation'])) {
+                header('Location: index.php?registered=confirm_email');
+                exit;
+            }
+
+            // If session was granted immediately (email confirmation disabled in Supabase)
+            if (isset($_SESSION['user']['token'])) {
+                setcookie('prosthecare_user', json_encode([
+                    'id' => $_SESSION['user']['id'],
+                    'name' => $_SESSION['user']['name'],
+                    'email' => $_SESSION['user']['email'],
+                    'role' => $_SESSION['user']['role']
+                ]), [
+                    'expires' => time() + 86400 * 7,
+                    'path' => '/',
+                    'httponly' => true,
+                    'samesite' => 'Lax'
+                ]);
+                header('Location: dashboard.php');
+                exit;
+            }
 
             header('Location: index.php?registered=1');
             exit;
@@ -139,6 +177,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <h2 class="form-main-heading">Create your patient account</h2>
                 <p class="form-sub-heading">Register to manage your prosthetic care, fittings, and appointments.</p>
 
+                <?php if (!isSupabaseConfigured()): ?>
+                    <div class="auth-alert-box alert-error" role="alert">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                        <span>
+                            <strong>Supabase API key needed:</strong> Add your <code>SUPABASE_ANON_KEY</code> to <code>.env</code> to connect with project <code>gdpzdypxospokczofxlu</code>.
+                        </span>
+                    </div>
+                <?php endif; ?>
+
                 <?php if (!empty($errorMessage)): ?>
                     <div class="auth-alert-box alert-error" role="alert">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -179,13 +230,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div class="form-field-group">
                         <label for="amputation_level" class="form-label-text">Prosthetic care / limb level</label>
                         <select id="amputation_level" name="amputation_level" class="form-input-control">
-                            <option value="Transtibial (Below Knee)">Transtibial (Below Knee)</option>
-                            <option value="Transfemoral (Above Knee)">Transfemoral (Above Knee)</option>
-                            <option value="Transradial (Below Elbow)">Transradial (Below Elbow)</option>
-                            <option value="Transhumeral (Above Elbow)">Transhumeral (Above Elbow)</option>
-                            <option value="Knee Disarticulation">Knee Disarticulation</option>
-                            <option value="Partial Foot / Symes">Partial Foot / Syme's</option>
-                            <option value="General Prosthetic Consultation">General Prosthetic Consultation</option>
+                            <option value="Transtibial (Below Knee)" <?= (($_POST['amputation_level'] ?? '') === 'Transtibial (Below Knee)') ? 'selected' : '' ?>>Transtibial (Below Knee)</option>
+                            <option value="Transfemoral (Above Knee)" <?= (($_POST['amputation_level'] ?? '') === 'Transfemoral (Above Knee)') ? 'selected' : '' ?>>Transfemoral (Above Knee)</option>
+                            <option value="Transradial (Below Elbow)" <?= (($_POST['amputation_level'] ?? '') === 'Transradial (Below Elbow)') ? 'selected' : '' ?>>Transradial (Below Elbow)</option>
+                            <option value="Transhumeral (Above Elbow)" <?= (($_POST['amputation_level'] ?? '') === 'Transhumeral (Above Elbow)') ? 'selected' : '' ?>>Transhumeral (Above Elbow)</option>
+                            <option value="Knee Disarticulation" <?= (($_POST['amputation_level'] ?? '') === 'Knee Disarticulation') ? 'selected' : '' ?>>Knee Disarticulation</option>
+                            <option value="Partial Foot / Symes" <?= (($_POST['amputation_level'] ?? '') === 'Partial Foot / Symes') ? 'selected' : '' ?>>Partial Foot / Syme's</option>
+                            <option value="General Prosthetic Consultation" <?= (($_POST['amputation_level'] ?? '') === 'General Prosthetic Consultation') ? 'selected' : '' ?>>General Prosthetic Consultation</option>
                         </select>
                     </div>
 

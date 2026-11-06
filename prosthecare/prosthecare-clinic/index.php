@@ -17,7 +17,11 @@ $errorMessage = '';
 $successMessage = '';
 
 if (isset($_GET['registered'])) {
-    $successMessage = 'Registration successful! You can now sign in with your credentials.';
+    if ($_GET['registered'] === 'confirm_email') {
+        $successMessage = 'Registration successful! A confirmation email has been sent. Please confirm your email before signing in (or disable "Confirm email" in your Supabase Auth settings).';
+    } else {
+        $successMessage = 'Registration successful! You can now sign in with your credentials.';
+    }
 }
 
 if (isset($_GET['reset_sent'])) {
@@ -120,6 +124,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <span class="form-eyebrow">WELCOME BACK</span>
                 <h2 class="form-main-heading">Sign in to your account</h2>
                 <p class="form-sub-heading">Enter your details to access your ProstheCare workspace.</p>
+
+                <?php if (!isSupabaseConfigured()): ?>
+                    <div class="auth-alert-box alert-error" role="alert">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                        <span>
+                            <strong>Supabase API key needed:</strong> Add your <code>SUPABASE_ANON_KEY</code> to <code>.env</code> to connect with project <code>gdpzdypxospokczofxlu</code>.
+                        </span>
+                    </div>
+                <?php endif; ?>
 
                 <?php if (!empty($errorMessage)): ?>
                     <div class="auth-alert-box alert-error" role="alert">
