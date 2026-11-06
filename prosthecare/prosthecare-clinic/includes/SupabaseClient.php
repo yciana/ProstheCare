@@ -184,7 +184,7 @@ class SupabaseClient {
 
         $errorMsg = $this->extractErrorMessage($response, 'Invalid email or password.');
         if (stripos($errorMsg, 'Email not confirmed') !== false) {
-            $errorMsg = 'Email not confirmed yet. Please verify your email via the confirmation link sent to your inbox, or disable "Confirm email" in your Supabase Auth settings.';
+            $errorMsg = 'Email not confirmed yet. Please verify your email via the link sent to your inbox, or disable "Confirm email" in Supabase Auth settings for instant login.';
         }
 
         $this->lastError = $errorMsg;
@@ -199,6 +199,40 @@ class SupabaseClient {
             ];
         }
 
+        // If a service_role key is configured, use the Admin API to create the user pre-confirmed
+        // This completely bypasses email confirmation and the free-tier email rate limit (3/hour)
+        if (!empty($this->serviceKey)) {
+            $adminEndpoint = $this->url . '/auth/v1/admin/users';
+            $adminHeaders = [
+                'apikey: ' . $this->serviceKey,
+                'Authorization: Bearer ' . $this->serviceKey,
+                'Content-Type: application/json'
+            ];
+            $adminPayload = json_encode([
+                'email' => $email,
+                'password' => $password,
+                'email_confirm' => true,
+                'user_metadata' => $metadata
+            ]);
+
+            $adminResponse = $this->executeCurl($adminEndpoint, 'POST', $adminPayload, $adminHeaders);
+            if ($adminResponse['status'] === 200 || $adminResponse['status'] === 201) {
+                $userData = is_array($adminResponse['data']) ? ($adminResponse['data']['user'] ?? $adminResponse['data']) : [];
+                
+                // Immediately sign in to get an authenticated session token
+                $signInResult = $this->signIn($email, $password);
+
+                return [
+                    'success' => true,
+                    'message' => 'Account successfully registered in Supabase!',
+                    'user' => $userData,
+                    'access_token' => $signInResult['user']['token'] ?? null,
+                    'requires_confirmation' => false
+                ];
+            }
+        }
+
+        // Standard Supabase Auth Signup
         $endpoint = $this->url . '/auth/v1/signup';
         $headers = [
             'apikey: ' . $this->anonKey,
@@ -218,7 +252,6 @@ class SupabaseClient {
             $userData = $data['user'] ?? $data;
             $accessToken = $data['access_token'] ?? null;
 
-            // If an active session token is immediately returned, save it
             if ($accessToken) {
                 $_SESSION['user'] = [
                     'id' => $userData['id'] ?? uniqid(),
@@ -241,6 +274,12 @@ class SupabaseClient {
         }
 
         $errorMsg = $this->extractErrorMessage($response, 'Registration failed.');
+
+        // Provide an actionable resolution if the Supabase email rate limit was hit
+        if (stripos($errorMsg, 'rate limit') !== false || stripos($errorMsg, 'over_email_send_rate_limit') !== false) {
+            $errorMsg = 'Supabase email rate limit reached (free tier limit: ~3 emails/hour). To fix this, open your Supabase Dashboard -> Authentication -> Providers -> Email, and toggle off "Confirm email" for instant registrations.';
+        }
+
         $this->lastError = $errorMsg;
         return ['success' => false, 'error' => $errorMsg];
     }

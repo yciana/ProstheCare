@@ -11,40 +11,54 @@ if (session_status() === PHP_SESSION_NONE) {
 /**
  * Load environment variables from .env file for local development
  */
-function loadEnv($path = __DIR__ . '/../.env') {
-    if (!file_exists($path)) {
-        return;
-    }
+function loadEnv($explicitPath = null) {
+    $searchPaths = $explicitPath ? [$explicitPath] : [
+        __DIR__ . '/../.env',
+        __DIR__ . '/../../.env',
+        (getcwd() ? getcwd() . '/.env' : null),
+        (getcwd() ? getcwd() . '/prosthecare-clinic/.env' : null)
+    ];
 
-    $lines = file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-    foreach ($lines as $line) {
-        $line = trim($line);
-        if (strpos($line, '#') === 0 || empty($line)) {
+    foreach ($searchPaths as $path) {
+        if (!$path || !file_exists($path)) {
             continue;
         }
 
-        if (strpos($line, '=') !== false) {
-            list($key, $value) = explode('=', $line, 2);
-            $key = trim($key);
-            $value = trim(trim($value), "\"'");
-            
-            putenv("$key=$value");
-            $_ENV[$key] = $value;
-            $_SERVER[$key] = $value;
+        $lines = file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        foreach ($lines as $line) {
+            $line = trim($line);
+            if (strpos($line, '#') === 0 || empty($line)) {
+                continue;
+            }
+
+            if (strpos($line, '=') !== false) {
+                list($key, $value) = explode('=', $line, 2);
+                $key = trim($key);
+                $value = trim(trim($value), "\"'");
+                
+                putenv("$key=$value");
+                $_ENV[$key] = $value;
+                $_SERVER[$key] = $value;
+            }
         }
+        break;
     }
 }
 
 // Load .env if present
 loadEnv();
 
-// Fetch credentials from environment (supports standard, Next.js, and modern Supabase publishable keys)
+// Fetch credentials from environment
 $defaultUrl = 'https://gdpzdypxospokczofxlu.supabase.co';
 
-$supabaseUrl = getenv('SUPABASE_URL') 
+$rawUrl = getenv('SUPABASE_URL') 
     ?: getenv('NEXT_PUBLIC_SUPABASE_URL') 
     ?: (isset($_SERVER['SUPABASE_URL']) && !empty($_SERVER['SUPABASE_URL']) ? $_SERVER['SUPABASE_URL'] : '')
     ?: (isset($_SERVER['NEXT_PUBLIC_SUPABASE_URL']) && !empty($_SERVER['NEXT_PUBLIC_SUPABASE_URL']) ? $_SERVER['NEXT_PUBLIC_SUPABASE_URL'] : $defaultUrl);
+
+// Strip any trailing /rest/v1 or /auth/v1 or trailing slashes so SUPABASE_URL is always the clean base domain
+$cleanUrl = preg_replace('#/(rest|auth)/v1/?$#i', '', trim($rawUrl));
+$supabaseUrl = rtrim($cleanUrl, '/');
 
 $supabaseAnonKey = getenv('SUPABASE_ANON_KEY') 
     ?: getenv('NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY') 
@@ -61,7 +75,7 @@ $supabaseServiceKey = getenv('SUPABASE_SERVICE_KEY')
 $clinicName = getenv('CLINIC_NAME') ?: (isset($_SERVER['CLINIC_NAME']) ? $_SERVER['CLINIC_NAME'] : 'ProstheCare Orthotics & Prosthetics Center');
 
 if (!defined('SUPABASE_URL')) {
-    define('SUPABASE_URL', rtrim($supabaseUrl, '/'));
+    define('SUPABASE_URL', $supabaseUrl);
 }
 if (!defined('SUPABASE_ANON_KEY')) {
     define('SUPABASE_ANON_KEY', $supabaseAnonKey);
