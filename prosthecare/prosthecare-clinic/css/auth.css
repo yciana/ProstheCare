@@ -1,0 +1,485 @@
+/* ==============================================================================
+   ProstheCare Clinic Management System - Auth Layout & Styling
+   Strictly External CSS (No inline styles)
+   ============================================================================== */
+
+@import url('variables.css');
+
+/* Main split layout wrapper */
+.auth-container {
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+    background-color: var(--color-surface);
+    overflow-x: hidden;
+}
+
+/* ==============================================================================
+   LEFT PANEL: Deep Teal Hero Showcase
+   ============================================================================== */
+.auth-hero {
+    position: relative;
+    width: 50%;
+    min-height: 100vh;
+    background: var(--hero-bg-gradient);
+    padding: 56px 64px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+    color: var(--color-text-white);
+}
+
+/* Brand header */
+.auth-brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    z-index: 10;
+}
+
+.brand-icon {
+    width: 44px;
+    height: 44px;
+    background-color: var(--color-surface);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    flex-shrink: 0;
+}
+
+.brand-icon svg {
+    width: 24px;
+    height: 24px;
+    color: var(--color-primary);
+}
+
+.brand-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.brand-title {
+    font-size: 21px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--color-text-white);
+    line-height: 1.2;
+}
+
+.brand-subtitle {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.78);
+    margin-top: 3px;
+}
+
+/* Hero Center Content */
+.auth-hero-main {
+    max-width: 540px;
+    margin-top: auto;
+    margin-bottom: auto;
+    padding-top: 40px;
+    padding-bottom: 40px;
+    z-index: 10;
+}
+
+.auth-eyebrow {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.85);
+    margin-bottom: 20px;
+}
+
+.auth-hero-headline {
+    font-size: 48px;
+    line-height: 1.15;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    color: var(--color-text-white);
+    margin-bottom: 22px;
+}
+
+.auth-hero-description {
+    font-size: 16px;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.84);
+    font-weight: 400;
+    max-width: 480px;
+}
+
+/* Decorative Concentric Radar Rings & Orbital Geometry */
+.auth-hero-graphic {
+    position: absolute;
+    bottom: -110px;
+    right: -80px;
+    width: 460px;
+    height: 460px;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.ring-outer {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 1px solid var(--hero-ring-color);
+}
+
+.ring-middle {
+    position: absolute;
+    inset: 70px;
+    border-radius: 50%;
+    border: 1px solid var(--hero-ring-color);
+}
+
+.ring-inner {
+    position: absolute;
+    inset: 140px;
+    border-radius: 50%;
+    border: 1px solid var(--hero-ring-glow);
+}
+
+.ring-center-badge {
+    position: absolute;
+    inset: 185px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 40px rgba(11, 116, 121, 0.35);
+}
+
+.ring-center-badge svg {
+    width: 38px;
+    height: 38px;
+    color: rgba(255, 255, 255, 0.95);
+}
+
+.orbital-dot {
+    position: absolute;
+    top: 60px;
+    left: 20px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background-color: var(--hero-amber-dot);
+    box-shadow: 0 0 16px rgba(245, 158, 11, 0.8), 0 0 28px rgba(245, 158, 11, 0.4);
+    animation: orbitPulse 3s ease-in-out infinite alternate;
+}
+
+@keyframes orbitPulse {
+    0% { transform: scale(0.95); opacity: 0.85; }
+    100% { transform: scale(1.15); opacity: 1; }
+}
+
+/* Hero Footer note */
+.auth-hero-footer {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 10;
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 13px;
+    font-weight: 400;
+}
+
+.auth-hero-footer svg {
+    width: 18px;
+    height: 18px;
+    color: rgba(255, 255, 255, 0.85);
+    flex-shrink: 0;
+}
+
+/* ==============================================================================
+   RIGHT PANEL: White Authentication Form Panel
+   ============================================================================== */
+.auth-form-panel {
+    width: 50%;
+    min-height: 100vh;
+    background-color: var(--color-surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 32px;
+}
+
+.auth-card-inner {
+    width: 100%;
+    max-width: 440px;
+}
+
+/* Form Eyebrow */
+.form-eyebrow {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-primary);
+    margin-bottom: 8px;
+    display: inline-block;
+}
+
+/* Form Titles */
+.form-main-heading {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--color-text-main);
+    letter-spacing: -0.025em;
+    line-height: 1.2;
+    margin-bottom: 8px;
+}
+
+.form-sub-heading {
+    font-size: 15px;
+    color: var(--color-text-muted);
+    line-height: 1.5;
+    margin-bottom: 32px;
+}
+
+/* Form Fields */
+.form-field-group {
+    margin-bottom: 22px;
+}
+
+.form-label-text {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-text-body);
+    margin-bottom: 8px;
+}
+
+.form-input-control {
+    width: 100%;
+    height: 48px;
+    padding: 0 16px;
+    font-size: 15px;
+    font-family: var(--font-sans);
+    color: var(--color-text-main);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    outline: none;
+}
+
+.form-input-control::placeholder {
+    color: var(--color-text-light);
+}
+
+.form-input-control:hover {
+    border-color: var(--color-border-hover);
+}
+
+.form-input-control:focus {
+    border-color: var(--color-primary);
+    box-shadow: var(--shadow-input-focus);
+}
+
+/* Password Input With Eye Toggle */
+.password-input-container {
+    position: relative;
+    width: 100%;
+}
+
+.password-input-container .form-input-control {
+    padding-right: 48px;
+}
+
+.password-toggle-button {
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 100%;
+    width: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--color-text-muted);
+    transition: color var(--transition-fast);
+}
+
+.password-toggle-button:hover {
+    color: var(--color-text-main);
+}
+
+.password-toggle-button svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* Form Aux Row (Forgot Password) */
+.form-aux-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 8px;
+    margin-bottom: 24px;
+}
+
+.link-forgot-password {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-primary);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+}
+
+.link-forgot-password:hover {
+    color: var(--color-primary-dark);
+    text-decoration: underline;
+}
+
+/* Submit Button */
+.btn-auth-action {
+    width: 100%;
+    height: 48px;
+    background-color: var(--color-primary);
+    color: var(--color-text-white);
+    font-size: 15px;
+    font-weight: 600;
+    font-family: var(--font-sans);
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(11, 116, 121, 0.18);
+    transition: background-color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-auth-action:hover {
+    background-color: var(--color-primary-dark);
+    box-shadow: 0 4px 8px rgba(11, 116, 121, 0.28);
+}
+
+.btn-auth-action:active {
+    background-color: var(--color-primary-darker);
+    transform: translateY(1px);
+}
+
+/* Bottom Registration / Switch Prompt */
+.auth-switch-prompt {
+    text-align: center;
+    margin-top: 26px;
+    font-size: 14px;
+    color: var(--color-text-muted);
+}
+
+.link-auth-switch {
+    font-weight: 600;
+    color: var(--color-primary);
+    text-decoration: none;
+}
+
+.link-auth-switch:hover {
+    color: var(--color-primary-dark);
+    text-decoration: underline;
+}
+
+/* Alerts & Status Boxes */
+.auth-alert-box {
+    padding: 12px 16px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 22px;
+    font-size: 14px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    line-height: 1.45;
+}
+
+.auth-alert-box svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.alert-error {
+    background-color: var(--color-danger-bg);
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+.alert-error svg {
+    color: var(--color-danger);
+}
+
+.alert-success {
+    background-color: var(--color-success-bg);
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+
+.alert-success svg {
+    color: var(--color-success);
+}
+
+.alert-demo-badge {
+    background-color: var(--color-primary-subtle);
+    border: 1px solid rgba(11, 116, 121, 0.2);
+    color: var(--color-primary-dark);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    margin-bottom: 22px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.demo-credentials-code {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    background: rgba(11, 116, 121, 0.12);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+/* Mobile & Responsive Adjustments */
+@media (max-width: 992px) {
+    .auth-container {
+        flex-direction: column;
+    }
+
+    .auth-hero {
+        width: 100%;
+        min-height: auto;
+        padding: 40px 24px;
+    }
+
+    .auth-hero-main {
+        padding-top: 24px;
+        padding-bottom: 24px;
+    }
+
+    .auth-hero-headline {
+        font-size: 34px;
+    }
+
+    .auth-hero-graphic {
+        display: none;
+    }
+
+    .auth-form-panel {
+        width: 100%;
+        min-height: auto;
+        padding: 40px 24px 60px 24px;
+    }
+}
