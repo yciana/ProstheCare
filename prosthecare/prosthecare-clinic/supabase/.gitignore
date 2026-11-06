@@ -1,0 +1,11 @@
+# Environment variables (Never commit secret keys or sensitive tokens)
+.env
+**/.env
+
+# Operating System files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+
+# Logs and cache
+*.log
