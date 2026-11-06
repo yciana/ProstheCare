@@ -1,7 +1,11 @@
--- Enable UUID Extension
+-- ==============================================================================
+-- ProstheCare Clinic Management System - Supabase PostgreSQL Schema
+-- ==============================================================================
+
+-- 1. Enable UUID Extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- Profiles Table
+-- 2. Staff Profiles Table
 CREATE TABLE IF NOT EXISTS public.profiles (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -9,10 +13,11 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     full_name VARCHAR(150) NOT NULL,
     clinic_name VARCHAR(200) DEFAULT 'ProstheCare Orthotics & Prosthetics Center',
     role VARCHAR(50) DEFAULT 'Prosthetist',
+    phone VARCHAR(50),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
 );
 
--- Patients Table
+-- 3. Patients Table (Prosthetic & Orthotic Clinic Clients)
 CREATE TABLE IF NOT EXISTS public.patients (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     patient_code VARCHAR(30) UNIQUE NOT NULL,
@@ -32,7 +37,7 @@ CREATE TABLE IF NOT EXISTS public.patients (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
 );
 
--- Appointments Table
+-- 4. Appointments Table (Clinical Fitting & Alignment Sessions)
 CREATE TABLE IF NOT EXISTS public.appointments (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     patient_id UUID REFERENCES public.patients(id) ON DELETE CASCADE NOT NULL,
@@ -45,7 +50,7 @@ CREATE TABLE IF NOT EXISTS public.appointments (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
 );
 
--- Care Plans Table
+-- 5. Care Plans & Prosthetic Fabrication Table
 CREATE TABLE IF NOT EXISTS public.care_plans (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     patient_id UUID REFERENCES public.patients(id) ON DELETE CASCADE NOT NULL,
@@ -53,25 +58,29 @@ CREATE TABLE IF NOT EXISTS public.care_plans (
     prescription_code VARCHAR(50),
     socket_type VARCHAR(100),
     suspension_type VARCHAR(100),
+    componentry_details TEXT,
     fabrication_stage VARCHAR(50) DEFAULT 'Cast Modification',
     target_delivery_date DATE,
+    warranty_months INTEGER DEFAULT 24,
+    notes TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
 );
 
--- Enable Row Level Security (RLS)
+-- 6. Row Level Security (RLS) Configuration
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.patients ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.appointments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.care_plans ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Allow access to profiles" ON public.profiles FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow access to patients" ON public.patients FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow access to appointments" ON public.appointments FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow access to care_plans" ON public.care_plans FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow public access to profiles" ON public.profiles FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow public access to patients" ON public.patients FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow public access to appointments" ON public.appointments FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow public access to care_plans" ON public.care_plans FOR ALL USING (true) WITH CHECK (true);
 
--- Seed Sample Data
+-- 7. Seed Initial Clinic Data
 INSERT INTO public.patients (patient_code, first_name, last_name, dob, gender, phone, email, amputation_level, affected_side, activity_level, device_type, fitting_stage, status)
 VALUES
 ('PT-2026-081', 'Eleanor', 'Vance', '1984-06-15', 'Female', '+1 (555) 234-5678', 'eleanor.vance@example.com', 'Transtibial (Below Knee)', 'Right', 'K3', 'Endoskeletal Carbon Foot with Vacuum Socket', 'Trial Fitting', 'Active'),
-('PT-2026-082', 'Marcus', 'Chen', '1991-11-20', 'Male', '+1 (555) 876-5432', 'marcus.chen@example.com', 'Transfemoral (Above Knee)', 'Left', 'K4', 'Genium Microprocessor Knee & Hydraulic Ankle', 'Definitive Lamination', 'In Fabrication')
+('PT-2026-082', 'Marcus', 'Chen', '1991-11-20', 'Male', '+1 (555) 876-5432', 'marcus.chen@example.com', 'Transfemoral (Above Knee)', 'Left', 'K4', 'Genium Microprocessor Knee & Hydraulic Ankle', 'Definitive Lamination', 'In Fabrication'),
+('PT-2026-083', 'Sophia', 'Rodriguez', '2001-03-08', 'Female', '+1 (555) 345-6789', 'sophia.r@example.com', 'Transradial (Below Elbow)', 'Right', 'K3', 'Multi-Articulating Myoelectric Hand', 'Assessment', 'Active')
 ON CONFLICT (patient_code) DO NOTHING;

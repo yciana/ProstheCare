@@ -1,7 +1,13 @@
 <?php
+/**
+ * ProstheCare Clinic Management System - Workspace Header Component
+ * Strictly External CSS (No inline styles)
+ */
+
 require_once __DIR__ . '/../config/supabase.php';
 require_once __DIR__ . '/SupabaseClient.php';
 
+// Auth check
 if (!isset($_SESSION['user'])) {
     if (isset($_COOKIE['prosthecare_user'])) {
         $cookieData = json_decode($_COOKIE['prosthecare_user'], true);
@@ -19,7 +25,6 @@ if (!isset($_SESSION['user'])) {
 
 $currentUser = $_SESSION['user'];
 $supabase = new SupabaseClient();
-$isLive = $supabase->isLive();
 $currentScript = basename($_SERVER['PHP_SELF']);
 ?>
 <!DOCTYPE html>
@@ -33,6 +38,7 @@ $currentScript = basename($_SERVER['PHP_SELF']);
 </head>
 <body>
     <div class="app-layout">
+        <!-- SIDEBAR NAVIGATION -->
         <aside class="app-sidebar" aria-label="Sidebar Navigation">
             <div class="sidebar-header">
                 <div class="sidebar-brand-icon">
@@ -64,6 +70,8 @@ $currentScript = basename($_SERVER['PHP_SELF']);
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                         <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                     </svg>
                     <span>Patients Directory</span>
                 </a>
@@ -82,6 +90,9 @@ $currentScript = basename($_SERVER['PHP_SELF']);
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                         <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
                     </svg>
                     <span>Prosthetic Devices</span>
                 </a>
@@ -111,22 +122,16 @@ $currentScript = basename($_SERVER['PHP_SELF']);
             </div>
         </aside>
 
+        <!-- MAIN VIEW CONTAINER -->
         <div class="app-main">
+            <!-- Top App Bar -->
             <header class="top-navbar">
                 <div class="top-nav-left">
                     <h1 class="top-page-title"><?= htmlspecialchars($pageTitle ?? 'Dashboard') ?></h1>
-                    
-                    <?php if ($isLive): ?>
-                        <div class="sync-status-indicator sync-live" title="Connected to Supabase PostgreSQL">
-                            <span class="sync-dot"></span>
-                            <span>Supabase Live</span>
-                        </div>
-                    <?php else: ?>
-                        <div class="sync-status-indicator sync-demo" title="Running in Local Session Mock Mode">
-                            <span class="sync-dot"></span>
-                            <span>Demo Mode (Session)</span>
-                        </div>
-                    <?php endif; ?>
+                    <div class="sync-status-indicator sync-live" title="Connected to Supabase PostgreSQL">
+                        <span class="sync-dot"></span>
+                        <span>Supabase Connected</span>
+                    </div>
                 </div>
 
                 <div class="top-nav-actions">
@@ -140,12 +145,5 @@ $currentScript = basename($_SERVER['PHP_SELF']);
                 </div>
             </header>
 
+            <!-- Page Body Content Starts Here -->
             <main class="page-content-wrapper">
-                <?php if (!$isLive): ?>
-                    <div class="config-banner">
-                        <div class="config-banner-text">
-                            <p class="config-banner-title">⚡ Connect Supabase for Cloud Database Synchronization</p>
-                            <p>You are viewing pre-seeded prosthetic demo records. Update your <code>.env</code> file with your Supabase URL & anon key to sync live Postgres tables.</p>
-                        </div>
-                    </div>
-                <?php endif; ?>

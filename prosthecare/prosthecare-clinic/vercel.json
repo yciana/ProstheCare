@@ -31,8 +31,5 @@
       "src": "/(.*)",
       "dest": "/$1"
     }
-  ],
-  "env": {
-    "APP_ENV": "production"
-  }
+  ]
 }

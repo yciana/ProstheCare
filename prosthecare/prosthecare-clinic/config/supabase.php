@@ -1,13 +1,16 @@
 <?php
 /**
  * ProstheCare Clinic Management System
- * Supabase Configuration & Environment Loader
+ * Production Supabase Configuration
  */
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+/**
+ * Load environment variables from .env file for local development
+ */
 function loadEnv($path = __DIR__ . '/../.env') {
     if (!file_exists($path)) {
         return;
@@ -34,24 +37,23 @@ function loadEnv($path = __DIR__ . '/../.env') {
     }
 }
 
+// Load .env if present
 loadEnv();
 
-define('SUPABASE_URL', rtrim(getenv('SUPABASE_URL') ?: '', '/'));
-define('SUPABASE_ANON_KEY', getenv('SUPABASE_ANON_KEY') ?: '');
-define('SUPABASE_SERVICE_KEY', getenv('SUPABASE_SERVICE_KEY') ?: '');
-define('CLINIC_NAME', getenv('CLINIC_NAME') ?: 'ProstheCare Management System');
+// Fetch credentials from environment (supports local .env and Vercel Environment Variables)
+$supabaseUrl = getenv('SUPABASE_URL') ?: (isset($_SERVER['SUPABASE_URL']) ? $_SERVER['SUPABASE_URL'] : '');
+$supabaseAnonKey = getenv('SUPABASE_ANON_KEY') ?: (isset($_SERVER['SUPABASE_ANON_KEY']) ? $_SERVER['SUPABASE_ANON_KEY'] : '');
+$supabaseServiceKey = getenv('SUPABASE_SERVICE_KEY') ?: (isset($_SERVER['SUPABASE_SERVICE_KEY']) ? $_SERVER['SUPABASE_SERVICE_KEY'] : '');
+$clinicName = getenv('CLINIC_NAME') ?: 'ProstheCare Management System';
 
+define('SUPABASE_URL', rtrim($supabaseUrl, '/'));
+define('SUPABASE_ANON_KEY', $supabaseAnonKey);
+define('SUPABASE_SERVICE_KEY', $supabaseServiceKey);
+define('CLINIC_NAME', $clinicName);
+
+/**
+ * Validates whether Supabase credentials are configured
+ */
 function isSupabaseConfigured() {
-    $url = SUPABASE_URL;
-    $key = SUPABASE_ANON_KEY;
-
-    if (empty($url) || empty($key)) {
-        return false;
-    }
-
-    if (strpos($url, 'your-project-ref') !== false || strpos($key, 'your-anon-key') !== false) {
-        return false;
-    }
-
-    return true;
+    return !empty(SUPABASE_URL) && !empty(SUPABASE_ANON_KEY);
 }

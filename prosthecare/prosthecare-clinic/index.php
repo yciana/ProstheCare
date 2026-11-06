@@ -1,7 +1,7 @@
 <?php
 /**
  * ProstheCare Clinic Management System - Sign In
- * Pixel-perfect implementation from Figma design
+ * Production-ready implementation matching Figma design (No Demo code)
  */
 
 require_once __DIR__ . '/config/supabase.php';
@@ -121,12 +121,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <h2 class="form-main-heading">Sign in to your account</h2>
                 <p class="form-sub-heading">Enter your details to access your ProstheCare workspace.</p>
 
-                <?php if (!$supabase->isLive()): ?>
-                    <div class="alert-demo-badge">
-                        <span><strong>Demo Mode:</strong> <span class="demo-credentials-code">admin@prosthecare.com</span> / <span class="demo-credentials-code">admin123</span></span>
-                    </div>
-                <?php endif; ?>
-
                 <?php if (!empty($errorMessage)): ?>
                     <div class="auth-alert-box alert-error" role="alert">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -158,7 +152,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             name="email" 
                             class="form-input-control" 
                             placeholder="you@example.com" 
-                            value="<?= htmlspecialchars($_POST['email'] ?? ($supabase->isLive() ? '' : 'admin@prosthecare.com')) ?>"
+                            value="<?= htmlspecialchars($_POST['email'] ?? '') ?>"
                             required 
                             autocomplete="email"
                         >
@@ -174,7 +168,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 name="password" 
                                 class="form-input-control" 
                                 placeholder="Enter your password" 
-                                value="<?= htmlspecialchars($_POST['password'] ?? ($supabase->isLive() ? '' : 'admin123')) ?>"
                                 required 
                                 autocomplete="current-password"
                             >

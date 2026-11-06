@@ -208,11 +208,6 @@
     color: var(--color-success);
 }
 
-.sync-demo {
-    background-color: var(--color-warning-bg);
-    color: var(--color-warning);
-}
-
 .sync-dot {
     width: 7px;
     height: 7px;
@@ -273,27 +268,6 @@
     display: flex;
     flex-direction: column;
     gap: 28px;
-}
-
-.config-banner {
-    background: linear-gradient(90deg, #ecfeff 0%, #f0fdfa 100%);
-    border: 1px solid #a5f3fc;
-    border-radius: var(--radius-md);
-    padding: 16px 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.config-banner-text {
-    font-size: 14px;
-    color: #0e7490;
-    line-height: 1.4;
-}
-
-.config-banner-title {
-    font-weight: 700;
-    margin-bottom: 2px;
 }
 
 .stats-grid-row {

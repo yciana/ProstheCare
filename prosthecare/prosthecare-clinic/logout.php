@@ -1,4 +1,8 @@
 <?php
+/**
+ * ProstheCare Clinic Management System - Logout
+ */
+
 require_once __DIR__ . '/config/supabase.php';
 
 $_SESSION = [];
