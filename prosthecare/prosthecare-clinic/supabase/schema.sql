@@ -90,9 +90,117 @@ DROP POLICY IF EXISTS "Allow public access to care_plans" ON public.care_plans;
 CREATE POLICY "Allow public access to care_plans" ON public.care_plans FOR ALL USING (true) WITH CHECK (true);
 
 -- 7. Seed Initial Clinic Data
-INSERT INTO public.patients (patient_code, first_name, last_name, dob, gender, phone, email, amputation_level, affected_side, activity_level, device_type, fitting_stage, status)
+INSERT INTO public.patients (patient_code, first_name, last_name, dob, gender, phone, email, amputation_level, affected_side, activity_level, device_type, fitting_stage, status, clinical_notes)
 VALUES
-('PT-2026-081', 'Eleanor', 'Vance', '1984-06-15', 'Female', '+1 (555) 234-5678', 'eleanor.vance@example.com', 'Transtibial (Below Knee)', 'Right', 'K3', 'Endoskeletal Carbon Foot with Vacuum Socket', 'Trial Fitting', 'Active'),
-('PT-2026-082', 'Marcus', 'Chen', '1991-11-20', 'Male', '+1 (555) 876-5432', 'marcus.chen@example.com', 'Transfemoral (Above Knee)', 'Left', 'K4', 'Genium Microprocessor Knee & Hydraulic Ankle', 'Definitive Lamination', 'In Fabrication'),
-('PT-2026-083', 'Sophia', 'Rodriguez', '2001-03-08', 'Female', '+1 (555) 345-6789', 'sophia.r@example.com', 'Transradial (Below Elbow)', 'Right', 'K3', 'Multi-Articulating Myoelectric Hand', 'Assessment', 'Active')
+('PC-1048', 'Sarah', 'Mitchell', '1989-03-18', 'Female', '+1 555 014 9822', 'sarah.m@example.com', 'Left transtibial', 'Left', 'K3 - Community ambulator', 'Dynamic Response K3', 'Trial Fitting', 'Active', 'Client reports improved comfort since the last socket adjustment. Continue current liner care routine and monitor pressure at distal tibia.'),
+('PT-2026-081', 'Eleanor', 'Vance', '1984-06-15', 'Female', '+1 (555) 234-5678', 'eleanor.vance@example.com', 'Transtibial (Below Knee)', 'Right', 'K3', 'Endoskeletal Carbon Foot with Vacuum Socket', 'Trial Fitting', 'Active', 'Standard socket review.'),
+('PT-2026-082', 'Marcus', 'Chen', '1991-11-20', 'Male', '+1 (555) 876-5432', 'marcus.chen@example.com', 'Transfemoral (Above Knee)', 'Left', 'K4', 'Genium Microprocessor Knee & Hydraulic Ankle', 'Definitive Lamination', 'In Fabrication', 'Fabrication in progress.'),
+('PT-2026-083', 'Sophia', 'Rodriguez', '2001-03-08', 'Female', '+1 (555) 345-6789', 'sophia.r@example.com', 'Transradial (Below Elbow)', 'Right', 'K3', 'Multi-Articulating Myoelectric Hand', 'Assessment', 'Active', 'New intake evaluation.')
 ON CONFLICT (patient_code) DO NOTHING;
+
+-- ==============================================================================
+-- 8. Staff Operations Tables
+-- ==============================================================================
+
+-- Clinic Queue
+CREATE TABLE IF NOT EXISTS public.clinic_queue (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    ticket_number VARCHAR(20) NOT NULL,
+    client_name VARCHAR(150) NOT NULL,
+    service_type VARCHAR(100) NOT NULL,
+    status VARCHAR(50) DEFAULT 'Waiting',
+    room VARCHAR(50),
+    estimated_wait_minutes INTEGER DEFAULT 15,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
+);
+
+-- Pending Approvals
+CREATE TABLE IF NOT EXISTS public.pending_approvals (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    request_code VARCHAR(50) NOT NULL,
+    client_name VARCHAR(150) NOT NULL,
+    title VARCHAR(200) NOT NULL,
+    status VARCHAR(50) DEFAULT 'Pending',
+    urgency VARCHAR(50) DEFAULT 'Normal',
+    notes TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
+);
+
+-- Maintenance Records
+CREATE TABLE IF NOT EXISTS public.maintenance_records (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    client_name VARCHAR(150) NOT NULL,
+    client_code VARCHAR(50) DEFAULT 'PC-1048',
+    device_serial VARCHAR(100) DEFAULT 'TT-2023-8841',
+    device_type VARCHAR(150) DEFAULT 'Transtibial - Left',
+    technician_name VARCHAR(150) DEFAULT 'Alex Morgan',
+    service_date DATE NOT NULL,
+    service_type VARCHAR(100) DEFAULT 'Routine maintenance',
+    socket_liner_condition VARCHAR(50) DEFAULT 'Good',
+    socket_liner_action TEXT,
+    pylon_adapters_condition VARCHAR(50) DEFAULT 'Monitor',
+    pylon_adapters_action TEXT DEFAULT 'Retorqued to spec',
+    foot_module_condition VARCHAR(50) DEFAULT 'Good',
+    foot_module_action TEXT,
+    cosmetic_cover_condition VARCHAR(50) DEFAULT 'Good',
+    cosmetic_cover_action TEXT,
+    service_notes TEXT,
+    is_safe_for_use BOOLEAN DEFAULT true,
+    next_service_due DATE,
+    status VARCHAR(50) DEFAULT 'Completed',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
+);
+
+-- Announcements
+CREATE TABLE IF NOT EXISTS public.announcements (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    title VARCHAR(255) NOT NULL,
+    message TEXT NOT NULL,
+    category VARCHAR(100) DEFAULT 'Clinic update',
+    audience VARCHAR(100) DEFAULT 'Everyone',
+    in_app_notification BOOLEAN DEFAULT true,
+    email_notification BOOLEAN DEFAULT true,
+    sms_notification BOOLEAN DEFAULT false,
+    is_scheduled BOOLEAN DEFAULT false,
+    scheduled_at TIMESTAMP WITH TIME ZONE,
+    status VARCHAR(50) DEFAULT 'Published',
+    created_by VARCHAR(150) DEFAULT 'ProstheCare Clinic',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
+);
+
+ALTER TABLE public.clinic_queue ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.pending_approvals ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.maintenance_records ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.announcements ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Allow public access to clinic_queue" ON public.clinic_queue;
+CREATE POLICY "Allow public access to clinic_queue" ON public.clinic_queue FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow public access to pending_approvals" ON public.pending_approvals;
+CREATE POLICY "Allow public access to pending_approvals" ON public.pending_approvals FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow public access to maintenance_records" ON public.maintenance_records;
+CREATE POLICY "Allow public access to maintenance_records" ON public.maintenance_records FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow public access to announcements" ON public.announcements;
+CREATE POLICY "Allow public access to announcements" ON public.announcements FOR ALL USING (true) WITH CHECK (true);
+
+INSERT INTO public.clinic_queue (ticket_number, client_name, service_type, status, room, estimated_wait_minutes)
+VALUES
+('A-04', 'Daniel Lee', 'Prosthetic fitting', 'In service', 'Fitting Room 1', 0),
+('A-05', 'Maria Santos', 'Consultation', 'Waiting', 'Consultation 2', 12),
+('A-06', 'Robert Chen', 'Maintenance', 'Waiting', 'Gait Lab', 18),
+('A-07', 'Sarah Mitchell', 'Prosthetic fitting', 'Checked in', 'Fitting Room 2', 25)
+ON CONFLICT DO NOTHING;
+
+INSERT INTO public.pending_approvals (request_code, client_name, title, status)
+VALUES
+('PR-0192', 'Michael Grant', 'Socket replacement', 'Pending'),
+('PR-0190', 'Emma Davis', 'Knee unit upgrade', 'Pending')
+ON CONFLICT DO NOTHING;
+
+INSERT INTO public.announcements (title, message, category, audience, in_app_notification, email_notification, sms_notification, status)
+VALUES
+('Holiday hours this month', 'We''ll be closed on May 26 for the public holiday.', 'Clinic update', 'Everyone', true, true, false, 'Published'),
+('Summer prosthetic care', 'Simple ways to protect your liner in warmer weather.', 'Care tip', 'Clients only', true, true, false, 'Published')
+ON CONFLICT DO NOTHING;

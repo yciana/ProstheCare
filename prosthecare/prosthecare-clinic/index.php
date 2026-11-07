@@ -1,7 +1,7 @@
 <?php
 /**
  * ProstheCare Clinic Management System - Sign In
- * Production-ready implementation matching Figma design (No Demo code)
+ * Clean, production implementation matching Figma design
  */
 
 require_once __DIR__ . '/config/supabase.php';
@@ -108,13 +108,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
             </div>
 
-            <!-- Security Trust Badge -->
+            <!-- Footer Badge -->
             <footer class="auth-hero-footer">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                    <polyline points="9 12 11 14 15 10"></polyline>
-                </svg>
-                <span>Your information is encrypted and secure</span>
+                <div class="security-badge">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                    </svg>
+                    <span>HIPAA compliant &middot; End-to-end encrypted medical records</span>
+                </div>
             </footer>
         </section>
 

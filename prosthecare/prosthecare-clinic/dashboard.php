@@ -16,8 +16,14 @@ if ($isClient) {
     $myPatient = !empty($clientRecords) ? $clientRecords[0] : null;
 
     $myAppointments = [];
+    if (!empty($_SESSION['booked_appointment'])) {
+        $myAppointments[] = $_SESSION['booked_appointment'];
+    }
     if ($myPatient && !empty($myPatient['id'])) {
-        $myAppointments = $supabase->from('appointments')->select('*')->eq('patient_id', $myPatient['id'])->get();
+        $dbAppointments = $supabase->from('appointments')->select('*')->eq('patient_id', $myPatient['id'])->get();
+        if (!empty($dbAppointments)) {
+            $myAppointments = array_merge($myAppointments, $dbAppointments);
+        }
     }
 
     $upcomingAptTitle = !empty($myAppointments[0]['appointment_type']) ? $myAppointments[0]['appointment_type'] : 'Prosthetic fitting';

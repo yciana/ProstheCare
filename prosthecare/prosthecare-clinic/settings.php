@@ -1,7 +1,7 @@
 <?php
 /**
  * ProstheCare Clinic Management System - Settings Page
- * Matches Figma design (Screenshot 5)
+ * Matches Figma design (Screenshot 6)
  */
 
 $pageTitle = 'Settings';
@@ -63,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 ?>
 
-<!-- SETTINGS HEADER ROW -->
+<!-- SETTINGS HEADER ROW (Screenshot 6) -->
 <div class="client-greeting-row" style="margin-bottom: 24px;">
     <div>
         <h1 class="client-greeting-title">Settings</h1>
@@ -71,11 +71,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 </div>
 
+<?php if (!empty($errorMessage)): ?>
+    <div class="auth-alert-box alert-danger" style="margin-bottom: 20px;">
+        <?= htmlspecialchars($errorMessage) ?>
+    </div>
+<?php endif; ?>
+
 <!-- 2-COLUMN SETTINGS SPLIT -->
-<div class="settings-split-grid" style="display: grid; grid-template-columns: 280px 1fr; gap: 24px; align-items: start;">
+<div class="settings-split-grid">
     <!-- LEFT: SETTINGS SUBNAV -->
-    <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 8px; box-shadow: var(--shadow-sm);">
-        <button type="button" class="settings-nav-item active" data-tab="profile" style="width: 100%; border: none; background: none; text-align: left; cursor: pointer;">
+    <div class="settings-nav-sidebar">
+        <!-- Profile (Active) -->
+        <button type="button" class="settings-nav-item active" data-tab="profile">
             <div class="settings-item-left">
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -83,25 +90,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </svg>
                 <span>Profile</span>
             </div>
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-chevron">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="nav-chevron">
                 <polyline points="9 18 15 12 9 6"></polyline>
             </svg>
         </button>
 
-        <button type="button" class="settings-nav-item" data-tab="security" style="width: 100%; border: none; background: none; text-align: left; cursor: pointer;">
+        <!-- Security -->
+        <button type="button" class="settings-nav-item" data-tab="security">
             <div class="settings-item-left">
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
                 </svg>
                 <span>Security</span>
             </div>
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-chevron">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="nav-chevron">
                 <polyline points="9 18 15 12 9 6"></polyline>
             </svg>
         </button>
 
-        <button type="button" class="settings-nav-item" data-tab="notifications" style="width: 100%; border: none; background: none; text-align: left; cursor: pointer;">
+        <!-- Notifications -->
+        <button type="button" class="settings-nav-item" data-tab="notifications">
             <div class="settings-item-left">
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
@@ -109,21 +117,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </svg>
                 <span>Notifications</span>
             </div>
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-chevron">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="nav-chevron">
                 <polyline points="9 18 15 12 9 6"></polyline>
             </svg>
         </button>
 
-        <button type="button" class="settings-nav-item" data-tab="accessibility" style="width: 100%; border: none; background: none; text-align: left; cursor: pointer;">
+        <!-- Accessibility -->
+        <button type="button" class="settings-nav-item" data-tab="accessibility">
             <div class="settings-item-left">
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="12" y1="8" x2="12" y2="12"></line>
-                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
                 </svg>
                 <span>Accessibility</span>
             </div>
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-chevron">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="nav-chevron">
                 <polyline points="9 18 15 12 9 6"></polyline>
             </svg>
         </button>
@@ -131,11 +139,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <!-- RIGHT: SETTINGS MAIN CONTENT CARD -->
     <div class="settings-card-content">
-        <!-- TAB 1: PROFILE (Image 5) -->
+        <!-- TAB 1: PROFILE (Screenshot 6) -->
         <div class="settings-tab-pane active" id="tabPaneProfile">
-            <h2 class="designer-card-title">Profile</h2>
-            <p class="designer-card-subtitle" style="margin-bottom: 24px;">Update your profile preferences.</p>
-            <div style="height: 1px; background: var(--color-surface-muted); margin-bottom: 24px;"></div>
+            <h2 class="settings-section-title">Profile</h2>
+            <p class="settings-section-subtitle">Update your profile preferences.</p>
+            <div class="settings-header-divider"></div>
 
             <!-- Avatar change block -->
             <div class="avatar-edit-row">
@@ -144,8 +152,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
                 <div>
                     <input type="file" id="avatarFileInput" accept="image/png, image/jpeg" style="display: none;">
-                    <button type="button" class="btn-secondary" id="changePhotoBtn">Change photo</button>
-                    <div style="font-size: 11px; color: var(--color-text-light); margin-top: 6px;">
+                    <button type="button" class="btn-change-photo" id="changePhotoBtn">Change photo</button>
+                    <div class="avatar-help-text">
                         JPG or PNG. Maximum 2 MB.
                     </div>
                 </div>
@@ -154,59 +162,59 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <!-- Profile form -->
             <form method="POST" action="settings.php">
                 <input type="hidden" name="action" value="save_profile">
-                <div class="measurements-2col-grid">
+                <div class="settings-form-grid">
                     <div>
-                        <label class="form-field-label" style="font-size: 13px; font-weight: 600; color: var(--color-text-main); margin-bottom: 6px; display: block;">First name</label>
-                        <input type="text" name="first_name" class="form-input-control" value="<?= htmlspecialchars($firstNameVal) ?>" required style="width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--color-border); font-size: 14px;">
+                        <label class="settings-field-label">First name</label>
+                        <input type="text" name="first_name" class="settings-form-input" value="<?= htmlspecialchars($firstNameVal) ?>" required>
                     </div>
                     <div>
-                        <label class="form-field-label" style="font-size: 13px; font-weight: 600; color: var(--color-text-main); margin-bottom: 6px; display: block;">Last name</label>
-                        <input type="text" name="last_name" class="form-input-control" value="<?= htmlspecialchars($lastNameVal) ?>" required style="width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--color-border); font-size: 14px;">
+                        <label class="settings-field-label">Last name</label>
+                        <input type="text" name="last_name" class="settings-form-input" value="<?= htmlspecialchars($lastNameVal) ?>" required>
                     </div>
                     <div>
-                        <label class="form-field-label" style="font-size: 13px; font-weight: 600; color: var(--color-text-main); margin-bottom: 6px; display: block;">Email</label>
-                        <input type="email" name="email" class="form-input-control" value="<?= htmlspecialchars($emailVal) ?>" required style="width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--color-border); font-size: 14px;">
+                        <label class="settings-field-label">Email</label>
+                        <input type="email" name="email" class="settings-form-input" value="<?= htmlspecialchars($emailVal) ?>" required>
                     </div>
                     <div>
-                        <label class="form-field-label" style="font-size: 13px; font-weight: 600; color: var(--color-text-main); margin-bottom: 6px; display: block;">Phone</label>
-                        <input type="text" name="phone" class="form-input-control" value="<?= htmlspecialchars($phoneVal) ?>" style="width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--color-border); font-size: 14px;">
+                        <label class="settings-field-label">Phone</label>
+                        <input type="text" name="phone" class="settings-form-input" value="<?= htmlspecialchars($phoneVal) ?>">
                     </div>
                 </div>
 
-                <div style="display: flex; justify-content: flex-end; margin-top: 32px;">
-                    <button type="submit" class="btn-primary-action">Save changes</button>
+                <div class="settings-actions-row">
+                    <button type="submit" class="btn-save-settings">Save changes</button>
                 </div>
             </form>
         </div>
 
         <!-- TAB 2: SECURITY -->
         <div class="settings-tab-pane" id="tabPaneSecurity" style="display: none;">
-            <h2 class="designer-card-title">Security Settings</h2>
-            <p class="designer-card-subtitle" style="margin-bottom: 24px;">Manage account credentials and security preferences.</p>
-            <div style="height: 1px; background: var(--color-surface-muted); margin-bottom: 24px;"></div>
+            <h2 class="settings-section-title">Security</h2>
+            <p class="settings-section-subtitle">Manage account credentials and password protection.</p>
+            <div class="settings-header-divider"></div>
 
             <div style="max-width: 480px;">
                 <div style="margin-bottom: 16px;">
-                    <label class="form-field-label" style="font-size: 13px; font-weight: 600; color: var(--color-text-main); margin-bottom: 6px; display: block;">Current Password</label>
-                    <input type="password" class="form-input-control" placeholder="••••••••" style="width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--color-border); font-size: 14px;">
+                    <label class="settings-field-label">Current Password</label>
+                    <input type="password" class="settings-form-input" placeholder="••••••••">
                 </div>
                 <div style="margin-bottom: 16px;">
-                    <label class="form-field-label" style="font-size: 13px; font-weight: 600; color: var(--color-text-main); margin-bottom: 6px; display: block;">New Password</label>
-                    <input type="password" class="form-input-control" placeholder="Min. 8 characters" style="width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--color-border); font-size: 14px;">
+                    <label class="settings-field-label">New Password</label>
+                    <input type="password" class="settings-form-input" placeholder="Min. 8 characters">
                 </div>
                 <div style="margin-bottom: 24px;">
-                    <label class="form-field-label" style="font-size: 13px; font-weight: 600; color: var(--color-text-main); margin-bottom: 6px; display: block;">Confirm New Password</label>
-                    <input type="password" class="form-input-control" placeholder="Repeat new password" style="width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--color-border); font-size: 14px;">
+                    <label class="settings-field-label">Confirm New Password</label>
+                    <input type="password" class="settings-form-input" placeholder="Repeat new password">
                 </div>
-                <button type="button" class="btn-primary-action" id="updatePasswordBtn">Update Password</button>
+                <button type="button" class="btn-save-settings" id="updatePasswordBtn">Update Password</button>
             </div>
         </div>
 
         <!-- TAB 3: NOTIFICATIONS -->
         <div class="settings-tab-pane" id="tabPaneNotifications" style="display: none;">
-            <h2 class="designer-card-title">Notification Preferences</h2>
-            <p class="designer-card-subtitle" style="margin-bottom: 24px;">Choose how and when ProstheCare contacts you.</p>
-            <div style="height: 1px; background: var(--color-surface-muted); margin-bottom: 24px;"></div>
+            <h2 class="settings-section-title">Notification Preferences</h2>
+            <p class="settings-section-subtitle">Choose how and when ProstheCare contacts you.</p>
+            <div class="settings-header-divider"></div>
 
             <div style="display: flex; flex-direction: column; gap: 18px;">
                 <label style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;">
@@ -235,9 +243,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <!-- TAB 4: ACCESSIBILITY -->
         <div class="settings-tab-pane" id="tabPaneAccessibility" style="display: none;">
-            <h2 class="designer-card-title">Accessibility</h2>
-            <p class="designer-card-subtitle" style="margin-bottom: 24px;">Adjust interface appearance for readability and comfort.</p>
-            <div style="height: 1px; background: var(--color-surface-muted); margin-bottom: 24px;"></div>
+            <h2 class="settings-section-title">Accessibility</h2>
+            <p class="settings-section-subtitle">Adjust interface appearance for readability and comfort.</p>
+            <div class="settings-header-divider"></div>
 
             <div style="display: flex; flex-direction: column; gap: 18px;">
                 <label style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;">
@@ -298,13 +306,15 @@ document.addEventListener('DOMContentLoaded', function() {
     // Photo change button
     const changePhotoBtn = document.getElementById('changePhotoBtn');
     const fileInput = document.getElementById('avatarFileInput');
-    changePhotoBtn.addEventListener('click', () => fileInput.click());
+    if (changePhotoBtn && fileInput) {
+        changePhotoBtn.addEventListener('click', () => fileInput.click());
 
-    fileInput.addEventListener('change', function() {
-        if (this.files && this.files[0]) {
-            showToast('Photo uploaded: ' + this.files[0].name);
-        }
-    });
+        fileInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                showToast('Photo uploaded: ' + this.files[0].name);
+            }
+        });
+    }
 
     // Password change demo
     const updatePwdBtn = document.getElementById('updatePasswordBtn');
