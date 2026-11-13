@@ -1,0 +1,44 @@
+-- ==============================================================================
+-- ProstheCare Clinic Management System - Client Dashboard Data Sources
+-- Run this in the Supabase SQL Editor if you haven't already set up the
+-- main schema. This file documents the tables used by dashboard.php.
+-- ==============================================================================
+
+-- The client dashboard reads from these existing tables:
+--
+--  1. patients          → find the client's patient record by email
+--  2. appointments      → upcoming appointments for the client
+--  3. clinic_queue      → today's queue ticket & estimated wait time
+--  4. care_plans        → active prosthetic request & fabrication stage
+--  5. announcements     → published clinic announcements
+--
+-- All tables are already defined in supabase/schema.sql.
+-- No new tables are needed for the redesigned dashboard.
+
+-- ── Optional: Seed a test queue entry for a client ──────────────────────────
+-- Replace 'Your Client Name' with the client's display name from profiles.
+--
+-- INSERT INTO public.clinic_queue
+--     (ticket_number, client_name, service_type, status, room, estimated_wait_minutes)
+-- VALUES
+--     ('A-08', 'Your Client Name', 'Prosthetic fitting', 'Waiting', 'Fitting Room 2', 30)
+-- ON CONFLICT DO NOTHING;
+
+-- ── Optional: Seed a care plan for a client patient ─────────────────────────
+-- Replace the patient_id UUID with the actual patient id from the patients table.
+--
+-- INSERT INTO public.care_plans
+--     (patient_id, plan_title, prescription_code, fabrication_stage, target_delivery_date)
+-- VALUES
+--     ('YOUR-PATIENT-UUID-HERE', 'Transtibial prosthesis', 'PR-2025-0184',
+--      'Fabrication', '2025-05-24')
+-- ON CONFLICT DO NOTHING;
+
+-- ── Dashboard fabrication_stage values recognised by the stepper ─────────────
+-- The 5-step stepper on the dashboard maps fabrication_stage to step numbers:
+--
+--   Step 1 → 'Pending' / 'Cast Modification'
+--   Step 2 → 'Assessment'
+--   Step 3 → 'Approved'
+--   Step 4 → 'Fabrication' / 'Definitive Lamination' / 'Trial Fitting'
+--   Step 5 → 'Ready' / 'Delivered'

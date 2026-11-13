@@ -4,6 +4,10 @@
  * Production Vercel Serverless Function Router & Front Controller
  */
 
+// Suppress deprecation and notice output in production HTML
+error_reporting(E_ALL & ~E_DEPRECATED & ~E_NOTICE & ~E_USER_DEPRECATED);
+ini_set('display_errors', '0');
+
 // Parse incoming request path
 $requestUri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
 $path = ltrim($requestUri, '/');
@@ -24,6 +28,14 @@ foreach ($forbiddenPrefixes as $prefix) {
 // Route mapping
 $aliases = [
     'dashboard' => 'dashboard.php',
+    'admin-dashboard' => 'admin-dashboard.php',
+    'admin-users' => 'admin-users.php',
+    'admin-availability' => 'admin-availability.php',
+    'admin-schedule' => 'admin-schedule.php',
+    'admin-patients' => 'admin-patients.php',
+    'admin-reference' => 'admin-reference.php',
+    'clinic-overview' => 'clinic-overview.php',
+    'overview' => 'clinic-overview.php',
     'patients' => 'patients.php',
     'client-records' => 'patients.php',
     'client-record' => 'patients.php',

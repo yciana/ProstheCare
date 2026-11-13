@@ -13,7 +13,7 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 CREATE TABLE IF NOT EXISTS public.profiles (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-    email VARCHAR(255) NOT NULL UNIQUE,
+    email VARCHAR(255),
     full_name VARCHAR(150) NOT NULL,
     clinic_name VARCHAR(200) DEFAULT 'ProstheCare Orthotics & Prosthetics Center',
     role VARCHAR(50) DEFAULT 'Client',

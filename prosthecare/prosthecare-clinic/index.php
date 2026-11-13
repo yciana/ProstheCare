@@ -8,7 +8,14 @@ require_once __DIR__ . '/config/supabase.php';
 require_once __DIR__ . '/includes/SupabaseClient.php';
 
 if (isset($_SESSION['user'])) {
-    header('Location: dashboard.php');
+    $role = strtolower($_SESSION['user']['role'] ?? 'client');
+    if ($role === 'admin') {
+        header('Location: admin-dashboard.php');
+    } elseif (in_array($role, ['staff', 'prosthetist', 'technician', 'doctor'])) {
+        header('Location: clinic-overview.php');
+    } else {
+        header('Location: dashboard.php');
+    }
     exit;
 }
 
@@ -49,7 +56,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'samesite' => 'Lax'
             ]);
 
-            header('Location: dashboard.php');
+            $role = strtolower($_SESSION['user']['role'] ?? 'client');
+            if ($role === 'admin') {
+                header('Location: admin-dashboard.php');
+            } elseif (in_array($role, ['staff', 'prosthetist', 'technician', 'doctor'])) {
+                header('Location: clinic-overview.php');
+            } else {
+                header('Location: dashboard.php');
+            }
             exit;
         } else {
             $errorMessage = $result['error'] ?? 'Invalid email or password.';

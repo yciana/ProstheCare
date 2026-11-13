@@ -50,6 +50,7 @@ loadEnv();
 
 // Fetch credentials from environment
 $defaultUrl = 'https://gdpzdypxospokczofxlu.supabase.co';
+$defaultAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkcHpkeXB4b3Nwb2tjem9meGx1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM4MzM5MDUsImV4cCI6MjEwOTQwOTkwNX0.MehZbKa8zVtBPECMgf5PLsIqdPNSW2Do6JHsCMXgIAQ';
 
 $rawUrl = getenv('SUPABASE_URL') 
     ?: getenv('NEXT_PUBLIC_SUPABASE_URL') 
@@ -65,7 +66,8 @@ $supabaseAnonKey = getenv('SUPABASE_ANON_KEY')
     ?: getenv('SUPABASE_PUBLISHABLE_KEY') 
     ?: (isset($_SERVER['SUPABASE_ANON_KEY']) && !empty($_SERVER['SUPABASE_ANON_KEY']) ? $_SERVER['SUPABASE_ANON_KEY'] : '')
     ?: (isset($_SERVER['NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY']) && !empty($_SERVER['NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY']) ? $_SERVER['NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY'] : '')
-    ?: (isset($_SERVER['SUPABASE_PUBLISHABLE_KEY']) && !empty($_SERVER['SUPABASE_PUBLISHABLE_KEY']) ? $_SERVER['SUPABASE_PUBLISHABLE_KEY'] : '');
+    ?: (isset($_SERVER['SUPABASE_PUBLISHABLE_KEY']) && !empty($_SERVER['SUPABASE_PUBLISHABLE_KEY']) ? $_SERVER['SUPABASE_PUBLISHABLE_KEY'] : '')
+    ?: $defaultAnonKey;
 
 $supabaseServiceKey = getenv('SUPABASE_SERVICE_KEY') 
     ?: getenv('SUPABASE_SECRET_KEY')

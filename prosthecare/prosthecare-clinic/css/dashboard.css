@@ -3347,3 +3347,1013 @@
         min-width: 100%;
     }
 }
+
+
+/* ==============================================================================
+   ADMIN WORKSPACE STYLES (Screenshots 1 - 8)
+   Matches Figma design exactly with zero external style dependencies
+   ============================================================================== */
+
+/* Admin Date Filter Dropdown */
+.admin-date-filter-dropdown {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-text-main);
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+}
+
+/* 4 Top Metric KPI Cards Grid */
+.admin-metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.admin-stat-card {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    box-shadow: var(--shadow-sm);
+}
+
+.admin-stat-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.admin-stat-icon.icon-teal {
+    background-color: #f0fdfa;
+    color: #0d9488;
+}
+
+.admin-stat-icon.icon-blue {
+    background-color: #f0f9ff;
+    color: #0284c7;
+}
+
+.admin-stat-icon.icon-amber {
+    background-color: #fffbeb;
+    color: #d97706;
+}
+
+.admin-stat-icon.icon-purple {
+    background-color: #f5f3ff;
+    color: #7c3aed;
+}
+
+.admin-stat-body {
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-stat-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--color-text-muted);
+    margin-bottom: 4px;
+}
+
+.admin-stat-value {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--color-text-main);
+    line-height: 1.1;
+    margin-bottom: 4px;
+    letter-spacing: -0.02em;
+}
+
+.admin-stat-trend {
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.admin-stat-trend.trend-up {
+    color: #059669;
+}
+
+.admin-stat-trend.trend-down {
+    color: #dc2626;
+}
+
+/* Middle Analytics Charts Grid */
+.admin-charts-grid {
+    display: grid;
+    grid-template-columns: 2fr 1.1fr;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.chart-large-card {
+    min-height: 320px;
+}
+
+.chart-donut-card {
+    min-height: 320px;
+}
+
+.admin-card-header-flex {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.chart-legend-box {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--color-text-muted);
+}
+
+.legend-color-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+}
+
+.legend-color-dot.dot-teal { background-color: #0b7479; }
+.legend-color-dot.dot-amber { background-color: #eab308; }
+.legend-color-dot.dot-orange { background-color: #e07a38; }
+.legend-color-dot.dot-blue { background-color: #0284c7; }
+.legend-color-dot.dot-grey { background-color: #94a3b8; }
+
+/* SVG Bar Chart */
+.bar-chart-container {
+    display: flex;
+    height: 220px;
+    gap: 12px;
+    align-items: flex-end;
+    padding-top: 10px;
+}
+
+.bar-chart-axis-y {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 185px;
+    padding-bottom: 24px;
+    font-size: 11px;
+    color: var(--color-text-light);
+    text-align: right;
+    width: 28px;
+}
+
+.bar-chart-bars-wrap {
+    flex: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    height: 100%;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 4px;
+}
+
+.bar-group-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    height: 100%;
+    justify-content: flex-end;
+}
+
+.bars-pair {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    height: 180px;
+    width: 100%;
+    justify-content: center;
+}
+
+.bar-single {
+    width: 8px;
+    border-radius: 2px 2px 0 0;
+    transition: height 0.3s ease;
+}
+
+.bar-single.bar-teal {
+    background-color: #0b7479;
+}
+
+.bar-single.bar-amber {
+    background-color: #eab308;
+}
+
+.bar-month-label {
+    font-size: 11px;
+    color: var(--color-text-light);
+    margin-top: 8px;
+}
+
+/* Donut Chart */
+.donut-chart-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    padding-top: 10px;
+}
+
+.donut-svg-box {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.donut-center-label {
+    position: absolute;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    pointer-events: none;
+}
+
+.donut-center-number {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--color-text-main);
+    line-height: 1;
+}
+
+.donut-center-text {
+    font-size: 11px;
+    color: var(--color-text-light);
+    margin-top: 2px;
+}
+
+.donut-legend-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 24px;
+    width: 100%;
+}
+
+.donut-stat-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+}
+
+.donut-indicator-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--color-text-muted);
+}
+
+.donut-count-num {
+    font-weight: 700;
+    color: var(--color-text-main);
+}
+
+/* Admin Bottom Row */
+.admin-bottom-grid {
+    display: grid;
+    grid-template-columns: 1.8fr 1.2fr;
+    gap: 20px;
+}
+
+.admin-activity-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.activity-row-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--color-surface-muted);
+}
+
+.activity-row-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.activity-icon-badge {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.activity-icon-badge.icon-blue { background-color: #f0f9ff; color: #0284c7; }
+.activity-icon-badge.icon-teal { background-color: #f0fdfa; color: #0d9488; }
+.activity-icon-badge.icon-grey { background-color: #f1f5f9; color: #64748b; }
+
+.activity-info-block {
+    flex: 1;
+}
+
+.activity-title-text {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-text-main);
+}
+
+.activity-actor-text {
+    font-size: 12px;
+    color: var(--color-text-muted);
+}
+
+.activity-time-text {
+    font-size: 11px;
+    color: var(--color-text-light);
+}
+
+/* System Health Rows */
+.system-health-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.health-row-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--color-surface-muted);
+    font-size: 13px;
+}
+
+.health-row-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.health-item-label {
+    color: var(--color-text-body);
+}
+
+.health-item-val {
+    font-weight: 600;
+}
+
+.health-item-val.val-green {
+    color: #059669;
+}
+
+.health-item-val.val-muted {
+    color: var(--color-text-light);
+}
+
+/* User Management Table Styles (Screenshot 2) */
+.users-table-card {
+    padding: 0;
+    overflow: hidden;
+}
+
+.admin-table-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--color-border);
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.toolbar-search-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background-color: var(--color-surface-muted);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: 0 12px;
+    width: 320px;
+}
+
+.toolbar-search-wrap svg {
+    color: var(--color-text-light);
+}
+
+.toolbar-dropdowns-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.admin-select-filter {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: 8px 12px;
+    font-size: 13px;
+    color: var(--color-text-main);
+    outline: none;
+    cursor: pointer;
+}
+
+.admin-table-responsive {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.admin-data-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.admin-data-table th {
+    padding: 12px 24px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--color-text-light);
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--color-border);
+    background-color: #fafbfc;
+}
+
+.admin-data-table td {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--color-surface-muted);
+    font-size: 13px;
+    color: var(--color-text-main);
+    vertical-align: middle;
+}
+
+.table-user-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.table-user-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background-color: #e0f2fe;
+    color: #0369a1;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.table-user-name {
+    font-weight: 600;
+    color: var(--color-text-main);
+}
+
+.table-user-email {
+    font-size: 12px;
+    color: var(--color-text-muted);
+}
+
+.admin-table-role-select {
+    padding: 6px 12px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background-color: var(--color-surface);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-text-main);
+    cursor: pointer;
+}
+
+.status-pill-verified {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background-color: #f0fdf4;
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.status-pill-pending-tag {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background-color: #fffbeb;
+    color: #b45309;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.status-pill-subtle {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background-color: var(--color-surface-muted);
+    color: var(--color-text-body);
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.table-last-active {
+    color: var(--color-text-muted);
+    font-size: 12px;
+}
+
+.admin-table-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    border-top: 1px solid var(--color-border);
+    font-size: 12px;
+    color: var(--color-text-light);
+}
+
+.table-pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.pagination-page-btn, .pagination-arrow-btn {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background-color: var(--color-surface);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--color-text-body);
+    cursor: pointer;
+}
+
+.pagination-page-btn.active {
+    background-color: #0b7479;
+    color: #ffffff;
+    border-color: #0b7479;
+}
+
+/* Availability Styles (Screenshot 3) */
+.admin-availability-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+.avail-stat-card {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 16px 20px;
+}
+
+.avail-stat-number {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--color-text-main);
+}
+
+.avail-stat-desc {
+    font-size: 13px;
+    color: var(--color-text-muted);
+}
+
+.avail-team-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.avail-team-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1.5fr 1fr;
+    align-items: center;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--color-surface-muted);
+    gap: 16px;
+}
+
+.avail-team-row:last-child {
+    border-bottom: none;
+}
+
+.avail-team-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.avail-status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.pill-avail-available {
+    background-color: #f0fdfa;
+    color: #0d9488;
+}
+
+.pill-avail-insession {
+    background-color: #fff7ed;
+    color: #c2410c;
+}
+
+.pill-avail-offsite {
+    background-color: var(--color-surface-muted);
+    color: var(--color-text-muted);
+}
+
+.avail-team-hours {
+    font-size: 13px;
+    color: var(--color-text-body);
+}
+
+.avail-team-action {
+    text-align: right;
+}
+
+/* Schedule Page Styles (Screenshot 4) */
+.schedule-main-card {
+    padding: 24px 30px;
+}
+
+.schedule-date-nav-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--color-border);
+    margin-bottom: 12px;
+}
+
+.btn-date-nav {
+    background: none;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--color-text-main);
+    cursor: pointer;
+}
+
+.schedule-date-center {
+    text-align: center;
+}
+
+.schedule-date-heading {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--color-text-main);
+}
+
+.schedule-date-meta {
+    font-size: 12px;
+    color: var(--color-text-muted);
+}
+
+.schedule-item-row {
+    display: grid;
+    grid-template-columns: 80px 2.2fr 1.5fr 1fr 1fr 60px;
+    align-items: center;
+    padding: 18px 0;
+    border-bottom: 1px solid var(--color-surface-muted);
+    gap: 16px;
+}
+
+.schedule-item-row:last-child {
+    border-bottom: none;
+}
+
+.schedule-time-bold {
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--color-text-main);
+}
+
+.schedule-client-name {
+    display: block;
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--color-text-main);
+}
+
+.schedule-procedure-text {
+    font-size: 12px;
+    color: var(--color-text-muted);
+}
+
+.schedule-doctor-name, .schedule-room-text {
+    font-size: 13px;
+    color: var(--color-text-body);
+}
+
+.schedule-status-pill {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.pill-status-completed {
+    background-color: #f0fdf4;
+    color: #16a34a;
+}
+
+.pill-status-inprogress {
+    background-color: #fff7ed;
+    color: #ea580c;
+}
+
+.pill-status-confirmed {
+    border: 1px solid #bae6fd;
+    background-color: #f0f9ff;
+    color: #0284c7;
+}
+
+/* Patient List Styles (Screenshot 5) */
+.patient-list-card {
+    padding: 24px 30px;
+}
+
+.patient-list-header-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--color-border);
+    margin-bottom: 12px;
+}
+
+.patient-today-count-badge {
+    background-color: var(--color-surface-muted);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-text-muted);
+}
+
+.patient-row-item {
+    display: grid;
+    grid-template-columns: 2fr 2fr 1fr 100px;
+    align-items: center;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--color-surface-muted);
+    gap: 16px;
+}
+
+.patient-row-item:last-child {
+    border-bottom: none;
+}
+
+.patient-row-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.patient-procedure-title {
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--color-text-main);
+}
+
+.patient-time-text {
+    font-size: 12px;
+    color: var(--color-text-muted);
+}
+
+.patient-status-pill {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.pill-patient-checkedin { background-color: #f0fdfa; color: #0d9488; }
+.pill-patient-completed { background-color: #f0fdf4; color: #16a34a; }
+.pill-patient-waiting { background-color: #fffbeb; color: #b45309; }
+.pill-patient-expected { background-color: var(--color-surface-muted); color: var(--color-text-muted); }
+
+/* Reference Data Split Styles (Screenshot 6) */
+.reference-split-grid {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 20px;
+    align-items: start;
+}
+
+.reference-nav-card {
+    padding: 18px 14px;
+}
+
+.ref-cat-nav-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    color: var(--color-text-main);
+    margin-bottom: 4px;
+    transition: background-color var(--transition-fast);
+}
+
+.ref-cat-nav-item:hover {
+    background-color: var(--color-surface-muted);
+}
+
+.ref-cat-nav-item.active {
+    background-color: #e6f4f5;
+    color: #07474b;
+    font-weight: 600;
+}
+
+.ref-cat-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.ref-cat-title {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.ref-cat-sub {
+    font-size: 11px;
+    color: var(--color-text-muted);
+}
+
+.reference-list-card {
+    padding: 24px 30px;
+}
+
+.reference-list-header-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--color-border);
+    margin-bottom: 12px;
+}
+
+.reference-items-table {
+    display: flex;
+    flex-direction: column;
+}
+
+.ref-table-header-row {
+    display: grid;
+    grid-template-columns: 2.5fr 1fr 1fr 80px;
+    padding: 10px 0;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--color-text-light);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.ref-table-data-row {
+    display: grid;
+    grid-template-columns: 2.5fr 1fr 1fr 80px;
+    align-items: center;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--color-surface-muted);
+    font-size: 13px;
+}
+
+.ref-table-data-row:last-child {
+    border-bottom: none;
+}
+
+.ref-cell-drag-name {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.drag-handle-dots {
+    color: var(--color-text-light);
+    cursor: grab;
+    font-size: 14px;
+}
+
+.ref-code-badge {
+    font-size: 11px;
+    color: var(--color-text-light);
+    font-family: monospace;
+}
+
+.ref-item-name-text {
+    font-weight: 600;
+    color: var(--color-text-main);
+}
+
+.ref-cell-duration {
+    font-size: 13px;
+    color: var(--color-text-muted);
+}
+
+.ref-cell-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.btn-ref-icon-action {
+    background: none;
+    border: none;
+    color: var(--color-text-light);
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-ref-icon-action:hover {
+    color: var(--color-text-main);
+}
+
+/* Modals */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(15, 23, 42, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    backdrop-filter: blur(2px);
+}
+
+.modal-dialog-card {
+    background-color: var(--color-surface);
+    border-radius: var(--radius-lg);
+    width: 100%;
+    max-width: 460px;
+    padding: 28px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.modal-title-text {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--color-text-main);
+}
+
+.modal-close-btn {
+    background: none;
+    border: none;
+    font-size: 22px;
+    color: var(--color-text-light);
+    cursor: pointer;
+}
