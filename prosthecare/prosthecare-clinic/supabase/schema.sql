@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS public.patients (
     email VARCHAR(150),
     amputation_level VARCHAR(100),
     affected_side VARCHAR(20),
-    activity_level VARCHAR(20),
+    activity_level VARCHAR(50),
     device_type VARCHAR(150),
     fitting_stage VARCHAR(50) DEFAULT 'Assessment',
     status VARCHAR(50) DEFAULT 'Active',

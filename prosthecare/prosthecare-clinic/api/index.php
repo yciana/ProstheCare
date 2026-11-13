@@ -23,10 +23,27 @@ foreach ($forbiddenPrefixes as $prefix) {
 
 // Route mapping
 $aliases = [
+    'dashboard' => 'dashboard.php',
+    'patients' => 'patients.php',
+    'client-records' => 'patients.php',
+    'client-record' => 'patients.php',
+    'maintenance' => 'maintenance.php',
+    'announcements' => 'announcements.php',
+    'settings' => 'settings.php',
+    'appointments' => 'appointments.php',
     'book-appointment' => 'appointments.php',
     'book-an-appointment' => 'appointments.php',
     'leg-designer' => 'designer.php',
-    'my-requests' => 'requests.php'
+    'designer' => 'designer.php',
+    'my-requests' => 'requests.php',
+    'requests' => 'requests.php',
+    'notifications' => 'notifications.php',
+    'logout' => 'logout.php',
+    'register' => 'register.php',
+    'forgot-password' => 'forgot-password.php',
+    'create-admin' => 'create-admin.php',
+    'setup-admin' => 'setup-admin.php',
+    'test-connection' => 'test-connection.php'
 ];
 
 if (empty($path) || $path === 'index' || $path === 'index.php') {
@@ -41,22 +58,22 @@ if (empty($path) || $path === 'index' || $path === 'index.php') {
         $candidate = $path . '.php';
     }
 
-    if (file_exists($baseDir . '/' . $candidate)) {
-        $script = $candidate;
+    if (file_exists($baseDir . '/' . basename($candidate))) {
+        $script = basename($candidate);
     } else {
         $script = null;
     }
 }
 
 if ($script) {
-    $realBase = realpath($baseDir);
-    $targetFile = realpath($baseDir . '/' . $script);
+    $scriptFile = basename($script);
+    $targetFile = $baseDir . '/' . $scriptFile;
 
-    // Security check: ensure the target file is inside the project directory and is a PHP file
-    if ($targetFile && strpos($targetFile, $realBase) === 0 && file_exists($targetFile) && substr($targetFile, -4) === '.php') {
+    // Security check: ensure target file exists and is a PHP file inside baseDir
+    if (file_exists($targetFile) && substr($targetFile, -4) === '.php') {
         // Set server variables to match direct script execution for headers & active tab navigation
-        $_SERVER['SCRIPT_NAME'] = '/' . basename($targetFile);
-        $_SERVER['PHP_SELF'] = '/' . basename($targetFile);
+        $_SERVER['SCRIPT_NAME'] = '/' . $scriptFile;
+        $_SERVER['PHP_SELF'] = '/' . $scriptFile;
 
         // Switch working directory to base directory so relative includes (config/, includes/) resolve properly
         chdir($baseDir);

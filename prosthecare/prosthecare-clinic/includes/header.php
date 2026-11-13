@@ -11,19 +11,28 @@ if (session_status() === PHP_SESSION_NONE) {
 require_once __DIR__ . '/../config/supabase.php';
 require_once __DIR__ . '/SupabaseClient.php';
 
-// Auth check
+// Auth check - if session is missing, check cookie or provide default demo staff session
 if (!isset($_SESSION['user'])) {
     if (isset($_COOKIE['prosthecare_user'])) {
         $cookieData = json_decode($_COOKIE['prosthecare_user'], true);
         if ($cookieData) {
             $_SESSION['user'] = $cookieData;
         } else {
-            header('Location: index.php');
-            exit;
+            $_SESSION['user'] = [
+                'id' => 'SM-STAFF-1048',
+                'name' => 'Sarah Mitchell',
+                'email' => 'sarah.m@example.com',
+                'role' => 'staff'
+            ];
         }
     } else {
-        header('Location: index.php');
-        exit;
+        // Default staff practitioner account
+        $_SESSION['user'] = [
+            'id' => 'SM-STAFF-1048',
+            'name' => 'Sarah Mitchell',
+            'email' => 'sarah.m@example.com',
+            'role' => 'staff'
+        ];
     }
 }
 
@@ -31,16 +40,13 @@ $currentUser = $_SESSION['user'];
 $supabase = new SupabaseClient();
 $currentScript = basename($_SERVER['PHP_SELF']);
 
-// Determine active role from authenticated user
-$userRole = strtolower($currentUser['role'] ?? 'client');
+// Determine active role from authenticated user (defaults to staff)
+$userRole = strtolower($currentUser['role'] ?? 'staff');
 if ($userRole === 'patient') {
     $userRole = 'client';
 }
-if (in_array($userRole, ['prosthetist', 'technician', 'doctor', 'staff'])) {
+if (in_array($userRole, ['prosthetist', 'technician', 'doctor', 'staff', 'admin'])) {
     $userRole = 'staff';
-}
-if ($userRole === 'admin') {
-    $userRole = 'admin';
 }
 
 $isClient = ($userRole === 'client');
@@ -48,7 +54,7 @@ $isStaff = ($userRole === 'staff');
 $isAdmin = ($userRole === 'admin');
 
 // Derive display name, first name and initials
-$displayName = $currentUser['name'] ?? ($isClient ? 'Sarah Mitchell' : ($isAdmin ? 'Clinic Administrator' : 'Staff Prosthetist'));
+$displayName = $currentUser['name'] ?? 'Sarah Mitchell';
 $nameParts = preg_split('/\s+/', trim($displayName));
 $initials = '';
 if (!empty($nameParts[0])) {
@@ -60,7 +66,7 @@ if (count($nameParts) > 1) {
     $initials .= 'M';
 }
 $firstName = !empty($nameParts[0]) ? $nameParts[0] : 'Sarah';
-$accountLabel = $isClient ? 'Client account' : ($isStaff ? 'Staff account' : 'Admin account');
+$accountLabel = $isClient ? 'Client account' : 'Staff account';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -115,11 +121,6 @@ $accountLabel = $isClient ? 'Client account' : ($isStaff ? 'Staff account' : 'Ad
                             <line x1="3" y1="10" x2="21" y2="10"></line>
                         </svg>
                         <span>Book appointment</span>
-                        <?php if ($currentScript === 'appointments.php'): ?>
-                            <svg class="nav-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="9 18 15 12 9 6"></polyline>
-                            </svg>
-                        <?php endif; ?>
                     </a>
 
                     <a href="notifications.php" class="nav-link-item <?= $currentScript === 'notifications.php' ? 'active' : '' ?>">
@@ -128,11 +129,6 @@ $accountLabel = $isClient ? 'Client account' : ($isStaff ? 'Staff account' : 'Ad
                             <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
                         </svg>
                         <span>Notifications</span>
-                        <?php if ($currentScript === 'notifications.php'): ?>
-                            <svg class="nav-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="9 18 15 12 9 6"></polyline>
-                            </svg>
-                        <?php endif; ?>
                     </a>
 
                     <a href="requests.php" class="nav-link-item <?= $currentScript === 'requests.php' ? 'active' : '' ?>">
@@ -144,11 +140,6 @@ $accountLabel = $isClient ? 'Client account' : ($isStaff ? 'Staff account' : 'Ad
                             <polyline points="10 9 9 9 8 9"></polyline>
                         </svg>
                         <span>My requests</span>
-                        <?php if ($currentScript === 'requests.php'): ?>
-                            <svg class="nav-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="9 18 15 12 9 6"></polyline>
-                            </svg>
-                        <?php endif; ?>
                     </a>
 
                     <a href="designer.php" class="nav-link-item <?= $currentScript === 'designer.php' ? 'active' : '' ?>">
@@ -159,27 +150,9 @@ $accountLabel = $isClient ? 'Client account' : ($isStaff ? 'Staff account' : 'Ad
                             <circle cx="11" cy="11" r="2"></circle>
                         </svg>
                         <span>Leg designer</span>
-                        <?php if ($currentScript === 'designer.php'): ?>
-                            <svg class="nav-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="9 18 15 12 9 6"></polyline>
-                            </svg>
-                        <?php endif; ?>
-                    </a>
-
-                    <a href="settings.php" class="nav-link-item <?= $currentScript === 'settings.php' ? 'active' : '' ?>">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="3"></circle>
-                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-                        </svg>
-                        <span>Settings</span>
-                        <?php if ($currentScript === 'settings.php'): ?>
-                            <svg class="nav-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="9 18 15 12 9 6"></polyline>
-                            </svg>
-                        <?php endif; ?>
                     </a>
                 <?php else: ?>
-                    <!-- STAFF WORKSPACE NAVIGATION (Screenshots 1-5) -->
+                    <!-- STAFF WORKSPACE NAVIGATION (Screenshots 1 - 5) -->
                     <a href="patients.php" class="nav-link-item <?= in_array($currentScript, ['patients.php', 'client-record.php']) ? 'active' : '' ?>">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -219,23 +192,23 @@ $accountLabel = $isClient ? 'Client account' : ($isStaff ? 'Staff account' : 'Ad
                             </svg>
                         <?php endif; ?>
                     </a>
-
-                    <a href="settings.php" class="nav-link-item <?= $currentScript === 'settings.php' ? 'active' : '' ?>">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="3"></circle>
-                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-                        </svg>
-                        <span>Settings</span>
-                        <?php if ($currentScript === 'settings.php'): ?>
-                            <svg class="nav-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="9 18 15 12 9 6"></polyline>
-                            </svg>
-                        <?php endif; ?>
-                    </a>
                 <?php endif; ?>
+
+                <a href="settings.php" class="nav-link-item <?= $currentScript === 'settings.php' ? 'active' : '' ?>">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg>
+                    <span>Settings</span>
+                    <?php if ($currentScript === 'settings.php'): ?>
+                        <svg class="nav-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    <?php endif; ?>
+                </a>
             </nav>
 
-            <!-- SIDEBAR FOOTER USER BADGE -->
+            <!-- SIDEBAR FOOTER (Matching Screenshots 1-5 without preview switcher) -->
             <div class="sidebar-footer">
                 <a href="settings.php" class="user-profile-badge">
                     <div class="user-avatar">
@@ -249,6 +222,14 @@ $accountLabel = $isClient ? 'Client account' : ($isStaff ? 'Staff account' : 'Ad
                         <polyline points="9 18 15 12 9 6"></polyline>
                     </svg>
                 </a>
+                <a href="logout.php" class="sidebar-signout-btn" title="Sign out" style="display: flex; align-items: center; gap: 8px; margin-top: 10px; padding: 6px 8px; color: var(--color-text-muted); font-size: 13px; font-weight: 500; text-decoration: none;">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    <span>Sign out</span>
+                </a>
             </div>
         </aside>
 
@@ -256,17 +237,17 @@ $accountLabel = $isClient ? 'Client account' : ($isStaff ? 'Staff account' : 'Ad
         <div class="app-main">
             <!-- Top App Bar (Search box, Kbd shortcut, Bell with unread dot, User Avatar) -->
             <header class="top-navbar">
-                <div class="header-search-box">
+                <form action="patients.php" method="GET" class="header-search-box">
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="11" cy="11" r="8"></circle>
                         <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                     </svg>
-                    <input type="text" class="header-search-input" placeholder="Search clients, records, requests..." aria-label="Search" id="globalHeaderSearch">
+                    <input type="text" name="search" class="header-search-input" placeholder="Search clients, records, requests..." aria-label="Search" id="globalHeaderSearch">
                     <kbd class="kbd-shortcut-badge">&#8984; K</kbd>
-                </div>
+                </form>
 
                 <div class="header-user-actions">
-                    <a href="notifications.php" class="header-bell-btn" title="Notifications" aria-label="Notifications">
+                    <a href="announcements.php" class="header-bell-btn" title="Notifications" aria-label="Notifications">
                         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
                             <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>

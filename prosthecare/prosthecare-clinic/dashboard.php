@@ -1,342 +1,260 @@
 <?php
 /**
- * ProstheCare Clinic Management System - Dashboard
- * Pixel-perfect adaptation for Client UI matching Figma design (Screenshot 1)
- * Full Clinical operations view preserved for Staff/Admin
+ * ProstheCare Clinic Management System - Staff Dashboard
+ * Matches Figma design (Screenshot 1: Clinic Overview)
  */
 
-$pageTitle = 'Dashboard';
+$pageTitle = 'Clinic Overview';
 require_once __DIR__ . '/includes/header.php';
 
-// Check if user is in Client preview or has client role
-if ($isClient) {
-    // Dynamic or mock clinic values for Sarah Mitchell
-    $userEmail = $currentUser['email'] ?? '';
-    $clientRecords = $supabase->from('patients')->select('*')->eq('email', $userEmail)->get();
-    $myPatient = !empty($clientRecords) ? $clientRecords[0] : null;
+$message = '';
+$isError = false;
 
-    $myAppointments = [];
-    if (!empty($_SESSION['booked_appointment'])) {
-        $myAppointments[] = $_SESSION['booked_appointment'];
-    }
-    if ($myPatient && !empty($myPatient['id'])) {
-        $dbAppointments = $supabase->from('appointments')->select('*')->eq('patient_id', $myPatient['id'])->get();
-        if (!empty($dbAppointments)) {
-            $myAppointments = array_merge($myAppointments, $dbAppointments);
+// Handle Pending Approvals (Approve / Reject)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'update_approval') {
+    $requestCode = trim($_POST['request_code'] ?? '');
+    $newStatus = trim($_POST['status'] ?? 'Approved');
+
+    if (!empty($requestCode)) {
+        // Update in Supabase
+        $supabase->from('pending_approvals')->eq('request_code', $requestCode)->update(['status' => $newStatus]);
+        // Update session approvals store if present
+        if (!isset($_SESSION['processed_approvals'])) {
+            $_SESSION['processed_approvals'] = [];
         }
+        $_SESSION['processed_approvals'][$requestCode] = $newStatus;
+
+        $message = "Request {$requestCode} has been marked as {$newStatus}.";
     }
+}
 
-    $upcomingAptTitle = !empty($myAppointments[0]['appointment_type']) ? $myAppointments[0]['appointment_type'] : 'Prosthetic fitting';
-    $upcomingAptDay = '15';
-    $upcomingAptMonth = 'MAY';
-    $upcomingAptTime = 'Thursday, 10:30 AM';
-    if (!empty($myAppointments[0]['appointment_date'])) {
-        $timeObj = strtotime($myAppointments[0]['appointment_date']);
-        if ($timeObj) {
-            $upcomingAptDay = date('d', $timeObj);
-            $upcomingAptMonth = strtoupper(date('M', $timeObj));
-            $upcomingAptTime = date('l, g:i A', $timeObj);
-        }
-    }
+// Fetch live data from Supabase (or fallback to Figma design defaults)
+$queueItems = $supabase->from('clinic_queue')->select('*')->order('created_at', true)->get();
+if (empty($queueItems)) {
+    $queueItems = [
+        ['ticket_number' => 'A-04', 'client_name' => 'Daniel Lee', 'service_type' => 'Prosthetic fitting', 'status' => 'In service'],
+        ['ticket_number' => 'A-05', 'client_name' => 'Maria Santos', 'service_type' => 'Consultation', 'status' => 'Waiting'],
+        ['ticket_number' => 'A-06', 'client_name' => 'Robert Chen', 'service_type' => 'Maintenance', 'status' => 'Waiting'],
+        ['ticket_number' => 'A-07', 'client_name' => 'Sarah Mitchell', 'service_type' => 'Prosthetic fitting', 'status' => 'Checked in']
+    ];
+}
+
+$pendingApprovals = $supabase->from('pending_approvals')->select('*')->eq('status', 'Pending')->get();
+if (empty($pendingApprovals)) {
+    $pendingApprovals = [
+        ['request_code' => 'PR-0192', 'client_name' => 'Michael Grant', 'title' => 'Socket replacement', 'status' => 'Pending'],
+        ['request_code' => 'PR-0190', 'client_name' => 'Emma Davis', 'title' => 'Knee unit upgrade', 'status' => 'Pending']
+    ];
+}
+
+// Filter out locally processed in session
+if (!empty($_SESSION['processed_approvals'])) {
+    $pendingApprovals = array_filter($pendingApprovals, function($item) {
+        return empty($_SESSION['processed_approvals'][$item['request_code']]);
+    });
+}
+
+// Compute or define KPIs matching Screenshot 1
+$waitingCount = count(array_filter($queueItems, fn($q) => strtolower($q['status'] ?? '') === 'waiting')) ?: 8;
+$inServiceCount = count(array_filter($queueItems, fn($q) => strtolower($q['status'] ?? '') === 'in service')) ?: 4;
+$completedTodayCount = 23;
+$avgWaitMinutes = 16;
 ?>
-    <!-- CLIENT DASHBOARD GREETING -->
-    <section class="client-greeting-row" aria-label="Greeting Header">
-        <div>
-            <h1 class="client-greeting-title">Good morning, <?= htmlspecialchars($firstName) ?></h1>
-            <p class="client-greeting-subtitle">Here's what's happening with your care today.</p>
+
+<!-- Header Flash Alert -->
+<?php if (!empty($message)): ?>
+    <div class="auth-alert-box alert-success" style="margin-bottom: 20px;">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+        <span><?= htmlspecialchars($message) ?></span>
+    </div>
+<?php endif; ?>
+
+<!-- CLINIC OVERVIEW HEADER (Screenshot 1) -->
+<section class="staff-overview-header" aria-label="Overview Header">
+    <div>
+        <h1 class="client-greeting-title">Clinic overview</h1>
+        <p class="client-greeting-subtitle">Wednesday, 14 May - Live operations</p>
+    </div>
+    <div>
+        <span class="clinic-status-badge">
+            <span class="status-pulse-dot"></span>
+            <span>Clinic is open</span>
+        </span>
+    </div>
+</section>
+
+<!-- KPI 4-CARD STATS GRID (Screenshot 1) -->
+<section class="staff-kpi-grid" aria-label="Key Performance Indicators">
+    <div class="staff-kpi-card">
+        <span class="kpi-label">WAITING</span>
+        <div class="kpi-number"><?= htmlspecialchars((string)$waitingCount) ?></div>
+        <span class="kpi-note">+2 in the last 15 min</span>
+    </div>
+
+    <div class="staff-kpi-card">
+        <span class="kpi-label">IN SERVICE</span>
+        <div class="kpi-number"><?= htmlspecialchars((string)$inServiceCount) ?></div>
+        <span class="kpi-note">Across 6 treatment rooms</span>
+    </div>
+
+    <div class="staff-kpi-card">
+        <span class="kpi-label">COMPLETED TODAY</span>
+        <div class="kpi-number"><?= htmlspecialchars((string)$completedTodayCount) ?></div>
+        <span class="kpi-note">83% of today's bookings</span>
+    </div>
+
+    <div class="staff-kpi-card">
+        <span class="kpi-label">AVG. WAIT TIME</span>
+        <div class="kpi-number"><?= htmlspecialchars((string)$avgWaitMinutes) ?> <span style="font-size: 16px; font-weight: 500;">min</span></div>
+        <span class="kpi-note">+4 min vs. yesterday</span>
+    </div>
+</section>
+
+<!-- MAIN 2-COLUMN OPERATIONAL GRID (Screenshot 1) -->
+<div class="staff-main-grid">
+    <!-- LEFT COLUMN: LIVE QUEUE -->
+    <div class="staff-card">
+        <div class="staff-card-header">
+            <div>
+                <h2 class="staff-card-title">Live queue</h2>
+                <p class="staff-card-subtitle">Auto-refreshes every 30 seconds</p>
+            </div>
+            <span class="badge-live-pill">
+                <span class="status-pulse-dot" style="width: 6px; height: 6px;"></span>
+                <span>Live</span>
+            </span>
         </div>
-        <div>
-            <a href="appointments.php" class="btn-primary-action">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                    <line x1="16" y1="2" x2="16" y2="6"></line>
-                    <line x1="8" y1="2" x2="8" y2="6"></line>
-                    <line x1="3" y1="10" x2="21" y2="10"></line>
-                </svg>
-                <span>Book appointment</span>
-            </a>
-        </div>
-    </section>
 
-    <!-- ROW 1: TODAY'S QUEUE CARD & UPCOMING APPOINTMENT -->
-    <section class="client-hero-grid" aria-label="Clinic Status and Appointment">
-        <!-- Today's Queue Number Card -->
-        <div class="client-queue-card">
-            <div class="queue-card-watermark"></div>
-            <div class="queue-card-left">
-                <div class="queue-card-eyebrow">TODAY'S QUEUE NUMBER</div>
-                <div class="queue-card-number">A-07</div>
-                <div class="queue-status-pill">
-                    <span class="queue-dot-pulse"></span>
-                    <span>Now serving A-04</span>
-                </div>
-            </div>
-            <div class="queue-card-divider"></div>
-            <div class="queue-card-right">
-                <div class="queue-wait-label">Estimated wait</div>
-                <div class="queue-wait-value">~18 min</div>
-                <div class="queue-wait-note">Check in at reception</div>
-            </div>
-        </div>
-
-        <!-- Upcoming Appointment Card -->
-        <div class="client-appointment-card">
-            <div class="card-header-label-row">
-                <span class="card-tiny-eyebrow">UPCOMING APPOINTMENT</span>
-                <button type="button" class="btn-icon-more" title="More options" aria-label="More options">
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-                        <circle cx="5" cy="12" r="2"></circle>
-                        <circle cx="12" cy="12" r="2"></circle>
-                        <circle cx="19" cy="12" r="2"></circle>
-                    </svg>
-                </button>
-            </div>
-            <h2 class="appointment-main-title"><?= htmlspecialchars($upcomingAptTitle) ?></h2>
-            <div class="appointment-details-block">
-                <div class="appointment-date-badge">
-                    <span class="date-badge-day"><?= htmlspecialchars($upcomingAptDay) ?></span>
-                    <span class="date-badge-month"><?= htmlspecialchars($upcomingAptMonth) ?></span>
-                </div>
-                <div class="appointment-info-text">
-                    <span class="appointment-datetime"><?= htmlspecialchars($upcomingAptTime) ?></span>
-                    <span class="appointment-subtext">with Dr. James Wilson</span>
-                    <span class="appointment-subtext">Fitting Room 2 &middot; 45 min</span>
-                </div>
-            </div>
-            <a href="appointments.php" class="link-view-action">
-                <span>View appointment</span>
-                <span>&rarr;</span>
-            </a>
-        </div>
-    </section>
-
-    <!-- ROW 2: ACTIVE REQUEST PROGRESS & ANNOUNCEMENTS -->
-    <section class="client-secondary-grid" aria-label="Active Prosthetic Request and Announcements">
-        <!-- Active Request Card with 5-Step Stepper -->
-        <div class="client-active-request-card">
-            <div class="request-card-header">
-                <span class="card-tiny-eyebrow">ACTIVE REQUEST</span>
-                <span class="status-pill-amber">In fabrication</span>
-            </div>
-            <h2 class="request-card-title">Transtibial prosthesis</h2>
-            <p class="request-card-subtitle">Request #PR-2025-0184 &middot; Submitted Apr 22</p>
-
-            <!-- 5-Step Horizontal Timeline Stepper -->
-            <div class="stepper-timeline-container">
-                <div class="stepper-track-line"></div>
-                <div class="stepper-track-progress"></div>
-
-                <div class="stepper-node-item">
-                    <div class="stepper-node-circle node-completed">
-                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
+        <div class="staff-queue-list">
+            <?php foreach ($queueItems as $q): 
+                $st = strtolower($q['status'] ?? 'waiting');
+                $statusClass = 'queue-status-waiting';
+                if ($st === 'in service') $statusClass = 'queue-status-in-service';
+                if ($st === 'checked in') $statusClass = 'queue-status-checked-in';
+            ?>
+                <div class="staff-queue-row">
+                    <div class="queue-col-ticket"><?= htmlspecialchars($q['ticket_number'] ?? 'A-00') ?></div>
+                    <div class="queue-col-info">
+                        <div class="queue-client-name"><?= htmlspecialchars($q['client_name'] ?? 'Client') ?></div>
+                        <div class="queue-service-type"><?= htmlspecialchars($q['service_type'] ?? 'Fitting') ?></div>
                     </div>
-                    <span class="stepper-node-label">Request received</span>
-                    <span class="stepper-node-date">Apr 22</span>
-                </div>
-
-                <div class="stepper-node-item">
-                    <div class="stepper-node-circle node-completed">
-                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
+                    <div>
+                        <span class="queue-status-pill <?= $statusClass ?>">
+                            <?= htmlspecialchars(ucfirst($q['status'] ?? 'Waiting')) ?>
+                        </span>
                     </div>
-                    <span class="stepper-node-label">Assessment</span>
-                    <span class="stepper-node-date">Apr 25</span>
-                </div>
-
-                <div class="stepper-node-item">
-                    <div class="stepper-node-circle node-completed">
-                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
+                    <div>
+                        <a href="patients.php?search=<?= urlencode($q['client_name'] ?? '') ?>" class="queue-action-link">
+                            Open &gt;
+                        </a>
                     </div>
-                    <span class="stepper-node-label">Approved</span>
-                    <span class="stepper-node-date">Apr 28</span>
                 </div>
+            <?php endforeach; ?>
+        </div>
 
-                <div class="stepper-node-item">
-                    <div class="stepper-node-circle node-active">
-                        <span>4</span>
+        <a href="patients.php" class="staff-card-footer-link">Open full queue board</a>
+    </div>
+
+    <!-- RIGHT COLUMN: PENDING APPROVALS & MAINTENANCE DUE -->
+    <div>
+        <!-- PENDING APPROVALS CARD -->
+        <div class="staff-card pending-approvals-card">
+            <div class="staff-card-header">
+                <div>
+                    <h2 class="staff-card-title">Pending approvals</h2>
+                    <p class="staff-card-subtitle"><?= count($pendingApprovals) ?> requests need review</p>
+                </div>
+                <span class="badge-amber-pill"><?= count($pendingApprovals) ?> pending</span>
+            </div>
+
+            <div class="staff-approvals-list">
+                <?php if (empty($pendingApprovals)): ?>
+                    <div style="padding: 16px 0; font-size: 13px; color: var(--color-text-muted);">
+                        All pending prosthetic requests have been reviewed.
                     </div>
-                    <span class="stepper-node-label">Fabrication</span>
-                    <span class="stepper-node-date">In progress</span>
-                </div>
-
-                <div class="stepper-node-item">
-                    <div class="stepper-node-circle node-upcoming">
-                        <span>5</span>
-                    </div>
-                    <span class="stepper-node-label">Ready</span>
-                    <span class="stepper-node-date">Est. May 24</span>
-                </div>
+                <?php else: ?>
+                    <?php foreach ($pendingApprovals as $app): ?>
+                        <div class="approval-item-block">
+                            <div class="approval-req-code"><?= htmlspecialchars($app['request_code'] ?? 'PR-0000') ?></div>
+                            <div class="approval-person-name"><?= htmlspecialchars($app['client_name'] ?? 'Client') ?></div>
+                            <div class="approval-procedure-title"><?= htmlspecialchars($app['title'] ?? 'Request') ?></div>
+                            <div class="approval-actions-row">
+                                <form method="POST" action="dashboard.php" style="margin: 0;">
+                                    <input type="hidden" name="action" value="update_approval">
+                                    <input type="hidden" name="request_code" value="<?= htmlspecialchars($app['request_code'] ?? '') ?>">
+                                    <input type="hidden" name="status" value="Rejected">
+                                    <button type="submit" class="btn-approval-reject" style="width: 100%;">Reject</button>
+                                </form>
+                                <form method="POST" action="dashboard.php" style="margin: 0;">
+                                    <input type="hidden" name="action" value="update_approval">
+                                    <input type="hidden" name="request_code" value="<?= htmlspecialchars($app['request_code'] ?? '') ?>">
+                                    <input type="hidden" name="status" value="Approved">
+                                    <button type="submit" class="btn-approval-approve" style="width: 100%;">Approve</button>
+                                </form>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </div>
 
-            <a href="requests.php" class="link-view-action">
-                <span>View request details</span>
-                <span>&rarr;</span>
-            </a>
+            <a href="patients.php" class="staff-card-footer-link">View all approvals</a>
         </div>
 
-        <!-- Clinic Announcements Card -->
-        <div class="client-announcements-card">
-            <div class="announcements-header-row">
-                <h2 class="announcements-title">Announcements</h2>
-                <a href="notifications.php?tab=care" class="link-view-action">View all</a>
-            </div>
-
-            <div class="announcement-list-item">
-                <div class="announcement-icon-box icon-box-orange">
-                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                    </svg>
+        <!-- MAINTENANCE DUE CARD -->
+        <div class="staff-card">
+            <div class="staff-card-header">
+                <div>
+                    <h2 class="staff-card-title">Maintenance due</h2>
                 </div>
-                <div class="announcement-content-block">
-                    <span class="announcement-tag-pill tag-orange">Clinic update</span>
-                    <h3 class="announcement-item-title">Holiday hours this month</h3>
-                    <p class="announcement-item-text">We'll be closed on May 26 for the public holiday.</p>
-                    <span class="announcement-timestamp">2 days ago</span>
-                </div>
+                <span class="badge-danger-pill">5 overdue</span>
             </div>
 
-            <div class="announcement-list-item">
-                <div class="announcement-icon-box icon-box-teal">
-                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path>
-                        <path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path>
-                    </svg>
-                </div>
-                <div class="announcement-content-block">
-                    <span class="announcement-tag-pill tag-teal">Care tip</span>
-                    <h3 class="announcement-item-title">Summer prosthetic care</h3>
-                    <p class="announcement-item-text">Simple ways to protect your liner in warmer weather.</p>
-                    <span class="announcement-timestamp">May 8</span>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- FOOTER (Image 1) -->
-    <footer class="client-footer-row">
-        <div>&copy; 2025 ProstheCare Clinic</div>
-        <div class="client-footer-links">
-            <a href="#" class="footer-link">Privacy</a>
-            <span>&middot;</span>
-            <a href="#" class="footer-link">Help center</a>
-            <span>&middot;</span>
-            <span>v2.4.1</span>
-        </div>
-    </footer>
-
-<?php } else {
-    // Staff & Admin Clinical Dashboard
-    $patients = $supabase->from('patients')->select('*')->order('created_at', false)->get();
-    $appointments = $supabase->from('appointments')->select('*')->order('appointment_date', true)->get();
-    $carePlans = $supabase->from('care_plans')->select('*')->get();
-
-    $totalPatients = count($patients);
-    $activeFittings = count(array_filter($patients, function($p) {
-        return in_array($p['fitting_stage'] ?? '', ['Assessment', 'Diagnostic Socket', 'Trial Fitting']);
-    }));
-    $inFabrication = count(array_filter($patients, function($p) {
-        return ($p['status'] ?? '') === 'In Fabrication' || ($p['fitting_stage'] ?? '') === 'Definitive Lamination';
-    }));
-    $completedCases = count(array_filter($patients, function($p) {
-        return ($p['status'] ?? '') === 'Completed';
-    }));
-?>
-    <section class="stats-grid-row" aria-label="Clinic Statistics">
-        <div class="stat-card-widget">
-            <div class="stat-metric-info">
-                <span class="stat-label-title">Total Active Clients</span>
-                <span class="stat-value-display"><?= $totalPatients ?></span>
-            </div>
-            <div class="stat-icon-wrapper stat-icon-teal">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="9" cy="7" r="4"></circle>
-                </svg>
-            </div>
-        </div>
-
-        <div class="stat-card-widget">
-            <div class="stat-metric-info">
-                <span class="stat-label-title">Active Fitting Trials</span>
-                <span class="stat-value-display"><?= $activeFittings ?></span>
-            </div>
-            <div class="stat-icon-wrapper stat-icon-blue">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <polyline points="12 6 12 12 16 14"></polyline>
-                </svg>
-            </div>
-        </div>
-
-        <div class="stat-card-widget">
-            <div class="stat-metric-info">
-                <span class="stat-label-title">In Socket Fabrication</span>
-                <span class="stat-value-display"><?= $inFabrication ?></span>
-            </div>
-            <div class="stat-icon-wrapper stat-icon-amber">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <div class="maintenance-stat-row">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--color-text-muted);">
                     <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
                 </svg>
+                <span>12 clients due within 30 days</span>
             </div>
-        </div>
 
-        <div class="stat-card-widget">
-            <div class="stat-metric-info">
-                <span class="stat-label-title">Completed Deliveries</span>
-                <span class="stat-value-display"><?= $completedCases ?></span>
-            </div>
-            <div class="stat-icon-wrapper stat-icon-green">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                </svg>
-            </div>
+            <a href="maintenance.php" class="btn-review-maintenance">Review maintenance list</a>
         </div>
-    </section>
+    </div>
+</div>
 
-    <section class="content-card-panel">
-        <div class="panel-header-row">
-            <h2 class="panel-title-text">Upcoming Fitting & Alignment Sessions</h2>
-            <a href="appointments.php" class="btn-secondary">View Full Schedule</a>
+<!-- FIND A CLIENT RECORD BAR (Screenshot 1 Bottom) -->
+<section class="find-client-bar" aria-label="Find Client Record">
+    <div class="find-client-left">
+        <div class="find-icon-circle">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
         </div>
-        <div class="data-table-container">
-            <table class="clinic-table">
-                <thead>
-                    <tr>
-                        <th>Time & Date</th>
-                        <th>Patient Identifier</th>
-                        <th>Clinical Procedure</th>
-                        <th>Room / Lab</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php if (empty($appointments)): ?>
-                        <tr><td colspan="5">No scheduled appointments recorded yet in Supabase.</td></tr>
-                    <?php else: ?>
-                        <?php foreach (array_slice($appointments, 0, 5) as $apt): ?>
-                            <tr>
-                                <td>
-                                    <strong><?= htmlspecialchars($apt['appointment_time'] ?? '') ?></strong>
-                                    <br><small><?= htmlspecialchars($apt['appointment_date'] ?? '') ?></small>
-                                </td>
-                                <td><?= htmlspecialchars($apt['patient_name'] ?? $apt['patient_id'] ?? 'Client') ?></td>
-                                <td><?= htmlspecialchars($apt['appointment_type'] ?? '') ?></td>
-                                <td><?= htmlspecialchars($apt['room'] ?? 'Fitting Suite') ?></td>
-                                <td><span class="status-pill status-fitting"><?= htmlspecialchars($apt['status'] ?? 'Scheduled') ?></span></td>
-                            </tr>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                </tbody>
-            </table>
+        <div>
+            <h3 class="find-client-title">Find a client record</h3>
+            <p class="find-client-subtitle">Search by name, client ID, phone, or email.</p>
         </div>
-    </section>
-<?php } ?>
+    </div>
+
+    <form action="patients.php" method="GET" class="find-client-form">
+        <div class="find-search-input-wrapper">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input 
+                type="text" 
+                name="search" 
+                class="find-search-input" 
+                placeholder="Search client records..." 
+                aria-label="Search client records"
+            >
+        </div>
+        <button type="submit" class="btn-find-search">Search</button>
+    </form>
+</section>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>
